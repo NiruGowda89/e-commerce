@@ -1,0 +1,6 @@
+backend/target/
+backend/launch.ps1
+*.class
+*.log
+.DS_Store
+Thumbs.db

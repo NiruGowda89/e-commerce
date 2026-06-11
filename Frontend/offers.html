@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offers - Karunada Collection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .discount-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc3545;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .original-price {
+      text-decoration: line-through;
+      color: #aaa;
+      font-size: 0.85rem;
+    }
+    .card { position: relative; }
+    .hero-offers {
+      background: linear-gradient(135deg, #c0392b, #e74c3c);
+      color: #fff;
+      padding: 3rem 2rem;
+    }
+    .savings-pill {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: #856404;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="index.html">Karunada Collection</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
+        <li class="nav-item"><a class="nav-link" href="new-arrivals.html">New Arrivals</a></li>
+        <li class="nav-item active"><a class="nav-link" href="offers.html">Offers</a></li>
+      </ul>
+      <form class="form-inline mx-2" onsubmit="doSearch(event)">
+        <div class="input-group">
+          <input class="form-control form-control-sm" type="search" id="globalSearch"
+                 placeholder="Search products…" style="width:180px;">
+          <div class="input-group-append">
+            <button class="btn btn-outline-light btn-sm" type="submit">🔍</button>
+          </div>
+        </div>
+      </form>
+      <ul class="navbar-nav ml-2">
+        <li class="nav-item">
+          <a class="nav-link" href="cart.html">🛒 <span id="cartCount" class="badge badge-light ml-1"></span></a>
+        </li>
+        <li id="authNav"></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Banner -->
+  <div class="hero-offers text-center mb-4">
+    <h1>🔥 Exclusive Offers</h1>
+    <p class="lead mb-0">Limited time deals — don't miss out!</p>
+  </div>
+
+  <!-- Coupon banner -->
+  <div class="container mb-3">
+    <div class="alert alert-warning d-flex align-items-center">
+      <span style="font-size:1.5rem;" class="mr-2">🎁</span>
+      <div>
+        <strong>Extra 5% OFF</strong> on orders above ₹1500 — use code
+        <span class="badge badge-dark px-2 py-1 ml-1">SAVE5</span>
+        <small class="text-muted ml-2">(applied at checkout)</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Products on Sale</h5>
+      <span class="badge badge-danger px-3 py-2" id="offerCount">Loading…</span>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="row" id="offersList">
+      <div class="col-12 text-center py-4">
+        <div class="spinner-border text-danger" role="status"></div>
+        <p class="mt-2 text-muted">Loading offers…</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center p-3">
+    <p class="mb-0">&copy; 2026 Karunada Collection |
+      <a href="index.html" class="text-light">Home</a> |
+      <a href="shop.html" class="text-light">Shop</a> |
+      <a href="new-arrivals.html" class="text-light">New Arrivals</a>
+    </p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/offers.js"></script>
+</body>
+</html>
