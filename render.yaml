@@ -1,10 +1,10 @@
 services:
   - type: web
     name: karunada-backend
-    runtime: java
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     plan: free
-    buildCommand: cd backend && mvn clean package -DskipTests
-    startCommand: java -jar backend/target/ecommerce-backend-1.0.0.jar
     envVars:
       - key: PORT
         value: 8080
