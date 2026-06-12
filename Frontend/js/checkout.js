@@ -1,4 +1,42 @@
-// ─── GST Calculation ─────────────────────────────────────────────────────────
+// ─── Coupon State ─────────────────────────────────────────────────────────────
+let appliedDiscount = 0;
+
+function applyCoupon() {
+    const code = document.getElementById('couponInput').value.trim();
+    const msgEl = document.getElementById('couponMsg');
+    if (!code) { msgEl.innerHTML = '<span class="text-danger">Enter a coupon code</span>'; return; }
+
+    const cart = getCart();
+    const subtotal = getCartTotal();
+    const gst = Math.round(calculateGST(cart));
+    const pincode = document.getElementById('pincode') ? document.getElementById('pincode').value : '';
+    const shipping = calculateShipping(cart, pincode);
+    const orderAmount = subtotal + gst + shipping;
+
+    fetch(API_BASE + '/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, orderAmount })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.valid) {
+            appliedDiscount = data.discount;
+            msgEl.innerHTML = `<span class="text-success">✅ Coupon applied! You save ₹${data.discount}</span>`;
+            const discountRow = document.getElementById('discountRow');
+            const discountEl = document.getElementById('checkoutDiscount');
+            if (discountRow) discountRow.style.display = 'flex';
+            if (discountEl) discountEl.textContent = '-₹' + data.discount;
+            renderOrderSummary(pincode);
+        } else {
+            appliedDiscount = 0;
+            msgEl.innerHTML = `<span class="text-danger">❌ ${data.error || 'Invalid coupon'}</span>`;
+        }
+    })
+    .catch(() => {
+        msgEl.innerHTML = '<span class="text-warning">⚠️ Could not validate coupon</span>';
+    });
+}
 // 5% GST for items ≤ ₹2500, 18% GST for items > ₹2500 (per item price)
 function calculateGST(cart) {
     return cart.reduce((total, item) => {
@@ -53,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const subtotal = getCartTotal();
         const gst = Math.round(calculateGST(cart));
         const shipping = calculateShipping(cart, pincode);
-        const grandTotal = subtotal + gst + shipping;
+        const grandTotal = Math.max(0, subtotal + gst + shipping - appliedDiscount);
 
         const order = {
             customerName:    document.getElementById('fullName').value.trim(),
@@ -122,7 +160,7 @@ function renderOrderSummary(pincode) {
     const subtotal  = getCartTotal();
     const gst       = Math.round(calculateGST(cart));
     const shipping  = calculateShipping(cart, currentPincode);
-    const grandTotal = subtotal + gst + shipping;
+    const grandTotal = Math.max(0, subtotal + gst + shipping - appliedDiscount);
 
     if (subtotalEl) subtotalEl.textContent = '₹' + subtotal;
     if (gstEl)      gstEl.textContent      = '₹' + gst;

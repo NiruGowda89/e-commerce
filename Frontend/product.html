@@ -63,6 +63,8 @@
         <h2 id="productName">Loading…</h2>
         <p id="productDesc" class="text-muted"></p>
         <p><span class="badge badge-secondary" id="productCategory"></span></p>
+        <!-- Rating summary -->
+        <div id="ratingBadge" class="mb-2"></div>
         <h4 class="text-primary">₹<span id="productPrice">0</span></h4>
 
         <div class="form-group">
@@ -88,6 +90,37 @@
         <button class="btn btn-primary mt-2" id="addToCartBtn">Add to Cart</button>
         <button class="btn btn-success mt-2 ml-2" id="buyNowBtn">Buy Now</button>
         <a href="shop.html" class="btn btn-secondary mt-2 ml-2">← Back to Shop</a>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <h4 class="mb-3">⭐ Customer Reviews</h4>
+        <div id="reviewsList" class="mb-4"></div>
+
+        <!-- Write a Review -->
+        <div class="card" id="reviewFormCard">
+          <div class="card-header"><strong>Write a Review</strong></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Rating</label>
+              <select class="form-control w-25" id="reviewRating">
+                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                <option value="3">⭐⭐⭐ 3 - Average</option>
+                <option value="2">⭐⭐ 2 - Poor</option>
+                <option value="1">⭐ 1 - Terrible</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Comment</label>
+              <textarea class="form-control" id="reviewComment" rows="3" placeholder="Share your experience…"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+            <div id="reviewMsg" class="mt-2"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
