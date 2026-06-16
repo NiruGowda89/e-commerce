@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout -  Karunada collection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="index.html"> Karunada collection</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
+        <li class="nav-item"><a class="nav-link" href="new-arrivals.html">New Arrivals</a></li>
+        <li class="nav-item"><a class="nav-link" href="offers.html">Offers</a></li>
+      </ul>
+      <form class="form-inline mx-2" onsubmit="doSearch(event)">
+        <div class="input-group">
+          <input class="form-control form-control-sm" type="search" id="globalSearch"
+                 placeholder="Search products…" style="width:180px;">
+          <div class="input-group-append">
+            <button class="btn btn-outline-light btn-sm" type="submit">🔍</button>
+          </div>
+        </div>
+      </form>
+      <ul class="navbar-nav ml-2">
+        <li class="nav-item">
+          <a class="nav-link" href="cart.html">🛒 <span id="cartCount" class="badge badge-light ml-1"></span></a>
+        </li>
+        <li id="authNav"></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-4 mb-5">
+    <h2>Checkout</h2>
+
+    <div class="row">
+      <!-- Order Summary -->
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Order Summary</h5>
+          </div>
+          <div class="card-body" id="orderSummary">
+            <p class="text-muted">Loading…</p>
+          </div>
+          <div class="card-footer">
+            <div class="d-flex justify-content-between">
+              <span>Subtotal</span>
+              <strong id="checkoutSubtotal">₹0</strong>
+            </div>
+            <div class="d-flex justify-content-between text-muted">
+              <span>GST <small>(5% / 18%)</small></span>
+              <strong id="checkoutGST">₹0</strong>
+            </div>
+            <div class="d-flex justify-content-between text-muted">
+              <span>Shipping <small>(updates with pincode)</small></span>
+              <strong id="checkoutShipping">₹80</strong>
+            </div>
+            <div class="d-flex justify-content-between text-success" id="discountRow" style="display:none!important;">
+              <span>Discount</span>
+              <strong id="checkoutDiscount">-₹0</strong>
+            </div>
+            <hr>
+            <!-- Coupon Code -->
+            <div class="input-group mb-2">
+              <input type="text" class="form-control form-control-sm" id="couponInput" placeholder="Enter coupon code">
+              <div class="input-group-append">
+                <button class="btn btn-outline-success btn-sm" type="button" onclick="applyCoupon()">Apply</button>
+              </div>
+            </div>
+            <div id="couponMsg" class="small mb-2"></div>
+            <div class="d-flex justify-content-between">
+              <span><strong>Total</strong></span>
+              <strong id="checkoutTotal" class="text-primary">₹0</strong>
+            </div>
+          </div>
+        </div>
+        <a href="cart.html" class="btn btn-secondary btn-block">← Back to Cart</a>
+      </div>
+
+      <!-- Checkout Form -->
+      <div class="col-md-8">
+        <form id="checkoutForm">
+          <div class="form-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" class="form-control" id="fullName" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" class="form-control" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone *</label>
+            <input type="tel" class="form-control" id="phone" required>
+          </div>
+          <div class="form-group">
+            <label for="address">Shipping Address *</label>
+            <textarea class="form-control" id="address" rows="3" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="city">City *</label>
+              <input type="text" class="form-control" id="city" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="pincode">Pin Code *</label>
+              <input type="text" class="form-control" id="pincode" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="paymentMethod">Payment Method *</label>
+            <select class="form-control" id="paymentMethod" required onchange="toggleUpiQr(this.value)">
+              <option value="">Select…</option>
+              <option value="UPI">UPI (QR Code)</option>
+              <option value="Razorpay">Online Payment (Razorpay)</option>
+              <option value="Cash on Delivery">Cash on Delivery</option>
+            </select>
+          </div>
+
+          <!-- UPI QR Section -->
+          <div id="upiQrSection" style="display:none;" class="mb-3 text-center">
+            <div class="card p-3 border-success">
+              <p class="mb-2 font-weight-bold text-success">📱 Scan & Pay via PhonePe / Any UPI App</p>
+              <img src="images/upi-qr.jpeg" alt="UPI QR Code"
+                   style="max-width:220px;width:100%;border:2px solid #28a745;border-radius:8px;"
+                   class="mx-auto d-block">
+              <p class="mt-2 text-muted small">Scan the QR code using any UPI app (PhonePe, GPay, Paytm, etc.)</p>
+              <div class="alert alert-warning py-1 mb-0 small">
+                ⚠️ After payment, take a screenshot and keep your UPI transaction ID handy.
+              </div>
+            </div>
+          </div>
+
+          <!-- Razorpay Online Payment -->
+          <div id="razorpaySection" style="display:none;" class="mb-3">
+            <div class="card p-3 border-primary">
+              <p class="mb-2 font-weight-bold text-primary">💳 Pay Online via Razorpay</p>
+              <p class="text-muted small">Cards, NetBanking, UPI, Wallets — all accepted</p>
+              <button type="button" class="btn btn-primary btn-block" onclick="payWithRazorpay()">
+                Pay Now with Razorpay
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="termsAccepted" required>
+              <label class="custom-control-label" for="termsAccepted">
+                I agree to the Terms and Conditions
+              </label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success btn-lg btn-block" id="placeOrderBtn">
+            Place Order
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center p-3">
+    <p class="mb-0">&copy; 2026 Karunada collection | <a href="index.html" class="text-light">Home</a> | <a href="shop.html" class="text-light">Shop</a></p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>
