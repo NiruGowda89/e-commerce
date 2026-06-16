@@ -1,15 +1,15 @@
+const API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 var AUTH_KEY       = 'urbanManUser';
-var USERS_KEY      = 'urbanManUsers';
 var ADMIN_AUTH_KEY = 'urbanManAdmin';
 
-// ─── Admin Credentials ────────────────────────────────────────────────────────
+// ─── Admin Credentials ─────────────────────────────────────────────────────────
 var ADMIN_CREDENTIALS = [
   { username: 'admin',    password: 'admin123',  name: 'Super Admin'    },
   { username: 'karunada', password: 'karu@2026', name: 'Karunada Admin' }
 ];
 
-// ─── Admin Auth ───────────────────────────────────────────────────────────────
 function getAdmin() {
   try { return JSON.parse(localStorage.getItem(ADMIN_AUTH_KEY) || 'null'); }
   catch(e) { return null; }
@@ -46,62 +46,65 @@ function getCurrentUser() {
   catch(e) { return null; }
 }
 
-function getStoredUsers() {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
-  catch(e) { return []; }
-}
-
-function registerUser(name, email, phone, password) {
-  var users = getStoredUsers();
-  var exists = users.find(function(u) {
-    return u.email.toLowerCase() === email.toLowerCase();
-  });
-  if (exists) {
-    return { ok: false, msg: 'An account with this email already exists.' };
-  }
-  var user = {
-    id: Date.now(),
-    name: name,
-    email: email.toLowerCase(),
-    phone: phone,
-    password: password,
-    createdAt: new Date().toISOString()
-  };
-  users.push(user);
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  localStorage.setItem(AUTH_KEY, JSON.stringify({
-    id: user.id, name: user.name, email: user.email, phone: user.phone
-  }));
-  // Try backend (non-blocking)
+async function registerUser(name, email, phone, password) {
   try {
-    fetch('http://10.247.200.19:8080/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, phone: phone, password: password })
-    }).catch(function() {});
-  } catch(e) {}
-  return { ok: true, user: user };
+      body: JSON.stringify({ name, email, phone, password })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return { ok: false, msg: data.error || 'Registration failed.' };
+    }
+
+    const user = {
+      id: data.user?.id || null,
+      name: data.user?.name || name,
+      email: data.user?.email || email,
+      phone: data.user?.phone || phone
+    };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    return { ok: true, user };
+  } catch (error) {
+    return { ok: false, msg: 'Unable to register. Please try again.' };
+  }
 }
 
-function loginUser(email, password) {
-  var users = getStoredUsers();
-  var user = users.find(function(u) {
-    return u.email.toLowerCase() === email.toLowerCase().trim() &&
-           u.password === password;
-  });
-  if (!user) return { ok: false, msg: 'Invalid email or password.' };
-  localStorage.setItem(AUTH_KEY, JSON.stringify({
-    id: user.id, name: user.name, email: user.email, phone: user.phone
-  }));
-  return { ok: true, user: user };
+async function loginUser(email, password) {
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return { ok: false, msg: data.error || 'Invalid credentials.' };
+    }
+
+    const user = {
+      id: data.user?.id || null,
+      name: data.user?.name || email.split('@')[0],
+      email: data.user?.email || email
+    };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    localStorage.setItem('authToken', data.token || '');
+    return { ok: true, user };
+  } catch (error) {
+    return { ok: false, msg: 'Unable to login. Please try again.' };
+  }
 }
 
 function logoutUser() {
   localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem('authToken');
   window.location.href = 'login.html';
 }
 
-// ─── Navbar Login Button ──────────────────────────────────────────────────────
+// ─── Navbar Auth Display ───────────────────────────────────────────────────────
 function refreshAuthNav() {
   var authEl = document.getElementById('authNav');
   if (!authEl) return;
@@ -134,6 +137,4 @@ function refreshAuthNav() {
   }
 }
 
-// Run immediately when script loads AND on DOMContentLoaded
-refreshAuthNav();
 document.addEventListener('DOMContentLoaded', refreshAuthNav);

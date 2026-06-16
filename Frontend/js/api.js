@@ -1,5 +1,5 @@
 // ─── API Configuration ────────────────────────────────────────────────────────
-const API_BASE = 'http://10.247.200.19:8080';
+const API_BASE = 'https://e-commerce-1-ariz.onrender.com/api';
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 async function apiGetProducts() {

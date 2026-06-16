@@ -337,7 +337,7 @@
     function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
 
     // ── User Login ──
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       hideMsg('loginErr');
       var email    = document.getElementById('loginEmail').value.trim();
@@ -345,7 +345,7 @@
 
       if (!email || !password) { showMsg('loginErr', 'Please fill in all fields.'); return; }
 
-      var result = loginUser(email, password);
+      var result = await loginUser(email, password);
       if (!result.ok) { showMsg('loginErr', result.msg); return; }
 
       var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
@@ -353,7 +353,7 @@
     });
 
     // ── Register ──
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       hideMsg('regErr'); hideMsg('regOk');
       var name     = document.getElementById('regName').value.trim();
@@ -368,7 +368,7 @@
       if (password.length < 6)                     { showMsg('regErr', 'Password must be at least 6 characters.'); return; }
       if (password !== confirm)                    { showMsg('regErr', 'Passwords do not match.'); return; }
 
-      var result = registerUser(name, email, phone, password);
+      var result = await registerUser(name, email, phone, password);
       if (!result.ok) { showMsg('regErr', result.msg); return; }
 
       showMsg('regOk', '✅ Account created! Redirecting…');
@@ -411,7 +411,7 @@
 
       if (!user) {
         // Try backend
-        fetch(API_BASE + '/auth/forgot-password', {
+        fetch(API_URL + '/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email })
