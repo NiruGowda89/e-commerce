@@ -1,5 +1,5 @@
 // Backend API URL (replace with your actual Render backend domain)
-const API_URL = "https://karunada-backend.onrender.com/api"; 
+const API_URL = "https://e-commerce-1-ariz.onrender.com/api"; 
 
 // Load all products from backend
 async function loadProducts() {
