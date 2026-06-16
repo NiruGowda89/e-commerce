@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Product -  Karunada collection</title>
+  <title>Product - Karunada Collection</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="index.html"> Karunada collection</a>
+    <a class="navbar-brand" href="index.html">Karunada Collection</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -52,91 +52,21 @@
       </ol>
     </nav>
 
-    <div class="row">
-      <!-- Product Image -->
-      <div class="col-md-6">
-        <img id="productImage" src="images/shirt.jpg" class="img-fluid rounded" alt="Product">
-      </div>
-
-      <!-- Product Details -->
-      <div class="col-md-6">
-        <h2 id="productName">Loading…</h2>
-        <p id="productDesc" class="text-muted"></p>
-        <p><span class="badge badge-secondary" id="productCategory"></span></p>
-        <!-- Rating summary -->
-        <div id="ratingBadge" class="mb-2"></div>
-        <h4 class="text-primary">₹<span id="productPrice">0</span></h4>
-
-        <div class="form-group">
-          <label>Size</label>
-          <select class="form-control w-50" id="sizeSelect">
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Color</label>
-          <select class="form-control w-50" id="colorSelect">
-            <option value="Black">Black</option>
-            <option value="Blue">Blue</option>
-            <option value="White">White</option>
-            <option value="Red">Red</option>
-          </select>
-        </div>
-
-        <button class="btn btn-primary mt-2" id="addToCartBtn">Add to Cart</button>
-        <button class="btn btn-success mt-2 ml-2" id="buyNowBtn">Buy Now</button>
-        <a href="shop.html" class="btn btn-secondary mt-2 ml-2">← Back to Shop</a>
-      </div>
-    </div>
-
-    <!-- Reviews Section -->
-    <div class="row mt-5">
-      <div class="col-12">
-        <h4 class="mb-3">⭐ Customer Reviews</h4>
-        <div id="reviewsList" class="mb-4"></div>
-
-        <!-- Write a Review -->
-        <div class="card" id="reviewFormCard">
-          <div class="card-header"><strong>Write a Review</strong></div>
-          <div class="card-body">
-            <div class="form-group">
-              <label>Rating</label>
-              <select class="form-control w-25" id="reviewRating">
-                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                <option value="3">⭐⭐⭐ 3 - Average</option>
-                <option value="2">⭐⭐ 2 - Poor</option>
-                <option value="1">⭐ 1 - Terrible</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Comment</label>
-              <textarea class="form-control" id="reviewComment" rows="3" placeholder="Share your experience…"></textarea>
-            </div>
-            <button class="btn btn-primary" onclick="submitReview()">Submit Review</button>
-            <div id="reviewMsg" class="mt-2"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Dynamic Product Grid -->
+    <div class="row" id="productContainer"></div>
   </div>
 
   <!-- Footer -->
   <footer class="bg-dark text-white text-center p-3">
-    <p class="mb-0">&copy; 2026  Karunada collection | <a href="index.html" class="text-light">Home</a> | <a href="shop.html" class="text-light">Shop</a> | <a href="cart.html" class="text-light">Cart</a></p>
+    <p class="mb-0">&copy; 2026 Karunada Collection | 
+      <a href="index.html" class="text-light">Home</a> | 
+      <a href="shop.html" class="text-light">Shop</a> | 
+      <a href="cart.html" class="text-light">Cart</a>
+    </p>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/products.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/search.js"></script>
-  <script src="js/product.js"></script>
 </body>
 </html>
