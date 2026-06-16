@@ -205,6 +205,27 @@
 
           <div class="switch-link">
             New here? <a href="#" onclick="switchTab('register');return false;">Create an account</a>
+            &nbsp;|&nbsp; <a href="#" onclick="switchTab('forgot');return false;">Forgot password?</a>
+          </div>
+        </div>
+
+        <!-- ── FORGOT PASSWORD PANEL ── -->
+        <div class="tab-panel" id="panelForgot">
+          <div class="auth-title">Reset Password 🔑</div>
+          <div class="auth-subtitle">Enter your registered email to reset</div>
+
+          <div class="msg-box msg-error"   id="forgotErr"></div>
+          <div class="msg-box msg-success" id="forgotOk"></div>
+
+          <form id="forgotForm">
+            <div class="field-group">
+              <label for="forgotEmail">Email Address</label>
+              <input type="email" id="forgotEmail" placeholder="you@example.com">
+            </div>
+            <button type="submit" class="btn-auth btn-login">Send Reset Link →</button>
+          </form>
+          <div class="switch-link">
+            <a href="#" onclick="switchTab('login');return false;">← Back to Login</a>
           </div>
         </div>
 
@@ -289,13 +310,17 @@
 
     // ── Tab switching ──
     function switchTab(tab) {
-      ['login', 'register', 'admin'].forEach(function(t) {
-        document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1))
-                .classList.toggle('active', t === tab);
+      ['login', 'register', 'admin', 'forgot'].forEach(function(t) {
+        var panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (panel) panel.classList.toggle('active', t === tab);
       });
-      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-      document.getElementById('tabAdmin').classList.toggle('active', tab === 'admin');
+      ['tabLogin', 'tabRegister', 'tabAdmin'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      if (tab === 'login')    document.getElementById('tabLogin').classList.add('active');
+      if (tab === 'register') document.getElementById('tabRegister') && document.getElementById('tabRegister').classList.add('active');
+      if (tab === 'admin')    document.getElementById('tabAdmin').classList.add('active');
     }
 
     // Open admin tab if URL has ?tab=admin
@@ -371,6 +396,43 @@
       }
 
       window.location.href = 'admin.html';
+    });
+
+    // ── Forgot Password ──
+    document.getElementById('forgotForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      hideMsg('forgotErr'); hideMsg('forgotOk');
+      var email = document.getElementById('forgotEmail').value.trim();
+      if (!email) { showMsg('forgotErr', 'Please enter your email.'); return; }
+
+      // Check if user exists locally
+      var users = typeof getStoredUsers === 'function' ? getStoredUsers() : [];
+      var user = users.find(function(u) { return u.email.toLowerCase() === email.toLowerCase(); });
+
+      if (!user) {
+        // Try backend
+        fetch(API_BASE + '/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        }).then(function(r) {
+          if (r.ok) {
+            showMsg('forgotOk', '✅ Password reset link sent to ' + email + '. Check your inbox.');
+          } else {
+            showMsg('forgotErr', '❌ No account found with this email.');
+          }
+        }).catch(function() {
+          showMsg('forgotErr', '❌ No account found with this email.');
+        });
+        return;
+      }
+
+      // Local: generate temp password
+      var tempPass = 'Reset@' + Math.floor(1000 + Math.random() * 9000);
+      user.password = tempPass;
+      var allUsers = users;
+      localStorage.setItem('urbanManUsers', JSON.stringify(allUsers));
+      showMsg('forgotOk', '✅ Your temporary password is: ' + tempPass + ' — please change it after login.');
     });
   </script>
 </body>

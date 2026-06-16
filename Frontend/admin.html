@@ -48,6 +48,9 @@
         <a class="nav-link" data-toggle="tab" href="#orders">Orders</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#coupons">Coupons</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" data-toggle="tab" href="#reports">Reports</a>
       </li>
     </ul>
@@ -144,15 +147,91 @@
         </table>
       </div>
 
+      <!-- Coupons Tab -->
+      <div id="coupons" class="tab-pane fade">
+        <h4>🎟️ Coupon Codes</h4>
+
+        <!-- Add Coupon Form -->
+        <form id="addCouponForm" class="card p-3 mb-4">
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label>Coupon Code *</label>
+              <input type="text" id="couponCode" class="form-control" placeholder="e.g. SAVE10" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label>Discount %</label>
+              <input type="number" id="couponPercent" class="form-control" placeholder="e.g. 10">
+            </div>
+            <div class="form-group col-md-3">
+              <label>Flat Discount (₹)</label>
+              <input type="number" id="couponAmount" class="form-control" placeholder="e.g. 100">
+            </div>
+            <div class="form-group col-md-3">
+              <label>Min Order (₹)</label>
+              <input type="number" id="couponMinOrder" class="form-control" placeholder="e.g. 500">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success">Add Coupon</button>
+          <small class="text-muted ml-3">Fill either Discount % or Flat Discount — not both</small>
+        </form>
+
+        <!-- Coupons Table -->
+        <table class="table table-bordered">
+          <thead class="thead-dark">
+            <tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody id="couponTable"></tbody>
+        </table>
+      </div>
+
       <!-- Reports Tab -->
       <div id="reports" class="tab-pane fade">
-        <h4>Sales Reports</h4>
-        <p class="text-muted">Connect the backend to see live sales data.</p>
-        <div class="card p-3">
-          <h5>Demo Summary</h5>
-          <p>Total Products: <strong id="totalProducts">-</strong></p>
-          <p>Total Sales: <strong>₹50,000</strong></p>
+        <h4>📊 Sales Reports</h4>
+        <div class="row mb-4" id="reportCards">
+          <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary">
+              <div class="card-body text-center">
+                <h2 id="rptTotalOrders">0</h2>
+                <p class="mb-0">Total Orders</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success">
+              <div class="card-body text-center">
+                <h2 id="rptRevenue">₹0</h2>
+                <p class="mb-0">Total Revenue</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="card text-white bg-warning">
+              <div class="card-body text-center">
+                <h2 id="rptPending">0</h2>
+                <p class="mb-0">Pending Orders</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="card text-white bg-info">
+              <div class="card-body text-center">
+                <h2 id="rptProducts">0</h2>
+                <p class="mb-0">Total Products</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <h5>📦 Recent Orders</h5>
+        <table class="table table-bordered table-sm">
+          <thead class="thead-dark">
+            <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+          </thead>
+          <tbody id="recentOrdersTable"></tbody>
+        </table>
+
+        <h5 class="mt-4">🏆 Top Products by Orders</h5>
+        <div id="topProductsChart"></div>
       </div>
 
     </div>

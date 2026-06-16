@@ -307,8 +307,59 @@ function downloadBill(order) {
 }
 
 function toggleUpiQr(value) {
-    const qrSection = document.getElementById('upiQrSection');
-    if (qrSection) {
-        qrSection.style.display = (value === 'UPI') ? 'block' : 'none';
+    const qrSection       = document.getElementById('upiQrSection');
+    const razorpaySection = document.getElementById('razorpaySection');
+    if (qrSection)       qrSection.style.display       = (value === 'UPI')       ? 'block' : 'none';
+    if (razorpaySection) razorpaySection.style.display  = (value === 'Razorpay') ? 'block' : 'none';
+}
+
+async function payWithRazorpay() {
+    const cart    = getCart();
+    const pincode = document.getElementById('pincode').value.trim();
+    const subtotal = getCartTotal();
+    const gst      = Math.round(calculateGST(cart));
+    const shipping = calculateShipping(cart, pincode);
+    const total    = Math.max(0, subtotal + gst + shipping - appliedDiscount);
+
+    const name  = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!name || !email || !phone) {
+        alert('Please fill in your name, email and phone before paying.');
+        return;
+    }
+
+    try {
+        const res  = await fetch(API_BASE + '/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: total })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+            alert('Payment gateway not configured. Please use UPI or Cash on Delivery.');
+            return;
+        }
+
+        const options = {
+            key:         data.keyId,
+            amount:      data.amount,
+            currency:    data.currency,
+            name:        'Karunada Collection',
+            description: 'Order Payment',
+            order_id:    data.orderId,
+            prefill:     { name, email, contact: phone },
+            theme:       { color: '#1a1a2e' },
+            handler: function(response) {
+                // Payment successful — verify and place order
+                document.getElementById('checkoutForm').dispatchEvent(new Event('submit'));
+            }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+    } catch (e) {
+        alert('Could not connect to payment gateway. Please use UPI or Cash on Delivery.');
     }
 }

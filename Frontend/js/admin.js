@@ -10,6 +10,40 @@ document.addEventListener('DOMContentLoaded', async function () {
     await loadAdminProducts();
     loadAdminOrders();
 
+    // Coupon tab
+    const couponTabEl = document.querySelector('a[href="#coupons"]');
+    if (couponTabEl) couponTabEl.addEventListener('click', loadCoupons);
+
+    // Add coupon form
+    const couponForm = document.getElementById('addCouponForm');
+    if (couponForm) {
+        couponForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const coupon = {
+                code:            document.getElementById('couponCode').value.trim().toUpperCase(),
+                discountPercent: document.getElementById('couponPercent').value || null,
+                discountAmount:  document.getElementById('couponAmount').value  || null,
+                minOrderAmount:  document.getElementById('couponMinOrder').value || 0,
+                active: true
+            };
+            if (!coupon.discountPercent && !coupon.discountAmount) {
+                alert('Enter either a % discount or flat discount amount.'); return;
+            }
+            try {
+                await fetch(API_BASE + '/coupons', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(coupon)
+                });
+                alert('Coupon ' + coupon.code + ' created!');
+                couponForm.reset();
+                loadCoupons();
+            } catch(e) {
+                alert('Could not save coupon — backend unreachable.');
+            }
+        });
+    }
+
     document.getElementById('addProductForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -150,4 +184,97 @@ function updateOrderStatus(orderId) {
 
     alert(`Order ${orderId} updated to "${newStatus}"`);
     loadAdminOrders();
+}
+
+// ─── Reports ──────────────────────────────────────────────────────────────────
+async function loadReports() {
+    const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+
+    const totalOrders = orders.length;
+    const revenue     = orders.reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
+    const pending     = orders.filter(o => o.status === 'Pending' || o.status === 'Confirmed').length;
+
+    const el = (id) => document.getElementById(id);
+    if (el('rptTotalOrders')) el('rptTotalOrders').textContent = totalOrders;
+    if (el('rptRevenue'))     el('rptRevenue').textContent     = '₹' + revenue.toFixed(0);
+    if (el('rptPending'))     el('rptPending').textContent     = pending;
+
+    // Total products
+    try {
+        const prods = await apiGetProducts();
+        if (el('rptProducts')) el('rptProducts').textContent = prods.length;
+        if (el('totalProducts')) el('totalProducts').textContent = prods.length;
+    } catch(e) {}
+
+    // Recent orders table
+    const recentTbl = el('recentOrdersTable');
+    if (recentTbl) {
+        const recent = [...orders].slice(0, 10);
+        recentTbl.innerHTML = recent.length === 0
+            ? '<tr><td colspan="5" class="text-center text-muted">No orders yet</td></tr>'
+            : recent.map(o => `<tr>
+                <td><small>${o.id}</small></td>
+                <td>${o.customerName || 'Guest'}</td>
+                <td>₹${o.total}</td>
+                <td><span class="badge badge-${statusColor(o.status)}">${o.status}</span></td>
+                <td><small>${o.placedAt ? new Date(o.placedAt).toLocaleDateString('en-IN') : '-'}</small></td>
+              </tr>`).join('');
+    }
+
+    // Top products
+    const productCount = {};
+    orders.forEach(o => {
+        (o.items || []).forEach(item => {
+            productCount[item.name] = (productCount[item.name] || 0) + item.quantity;
+        });
+    });
+    const sorted = Object.entries(productCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    const chartEl = el('topProductsChart');
+    if (chartEl) {
+        if (sorted.length === 0) {
+            chartEl.innerHTML = '<p class="text-muted">No order data yet.</p>';
+        } else {
+            const max = sorted[0][1];
+            chartEl.innerHTML = sorted.map(([name, count]) => `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>${name}</span><strong>${count} sold</strong>
+                    </div>
+                    <div class="progress" style="height:20px;">
+                        <div class="progress-bar bg-success" style="width:${Math.round(count/max*100)}%">${count}</div>
+                    </div>
+                </div>`).join('');
+        }
+    }
+}
+
+// Load reports when tab is clicked
+document.addEventListener('DOMContentLoaded', function() {
+    const reportsTab = document.querySelector('a[href="#reports"]');
+    if (reportsTab) reportsTab.addEventListener('click', loadReports);
+});
+
+// ─── Coupon Management ────────────────────────────────────────────────────────
+async function loadCoupons() {
+    try {
+        const res = await fetch(API_BASE + '/coupons');
+        const coupons = await res.json();
+        const tbody = document.getElementById('couponTable');
+        if (!tbody) return;
+        tbody.innerHTML = coupons.length === 0
+            ? '<tr><td colspan="5" class="text-center text-muted">No coupons</td></tr>'
+            : coupons.map(c => `<tr>
+                <td><strong>${c.code}</strong></td>
+                <td>${c.discountPercent ? c.discountPercent + '%' : '₹' + c.discountAmount}</td>
+                <td>₹${c.minOrderAmount || 0}</td>
+                <td><span class="badge badge-${c.active ? 'success' : 'secondary'}">${c.active ? 'Active' : 'Inactive'}</span></td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteCoupon(${c.couponId})">Delete</button></td>
+              </tr>`).join('');
+    } catch(e) { console.warn('Could not load coupons'); }
+}
+
+async function deleteCoupon(id) {
+    if (!confirm('Delete this coupon?')) return;
+    await fetch(API_BASE + '/coupons/' + id, { method: 'DELETE' });
+    loadCoupons();
 }
