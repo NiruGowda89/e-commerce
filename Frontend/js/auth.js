@@ -8,39 +8,23 @@ var API_URL = window.API_URL;
 var AUTH_KEY       = 'urbanManUser';
 var ADMIN_AUTH_KEY = 'urbanManAdmin';
 
-// ─── Admin Credentials ─────────────────────────────────────────────────────────
-var ADMIN_CREDENTIALS = [
-  { username: 'admin',    password: 'admin123',  name: 'Super Admin'    },
-  { username: 'karunada', password: 'karu@2026', name: 'Karunada Admin' }
-];
+// ─── Admin Role Checks ─────────────────────────────────────────────────────────
 
 function getAdmin() {
-  try { return JSON.parse(localStorage.getItem(ADMIN_AUTH_KEY) || 'null'); }
-  catch(e) { return null; }
-}
-
-function loginAdmin(username, password) {
-  var match = null;
-  for (var i = 0; i < ADMIN_CREDENTIALS.length; i++) {
-    if (ADMIN_CREDENTIALS[i].username === username.trim() &&
-        ADMIN_CREDENTIALS[i].password === password) {
-      match = ADMIN_CREDENTIALS[i];
-      break;
-    }
+  const user = getCurrentUser();
+  if (user && user.role === 'ADMIN') {
+    return user;
   }
-  if (!match) return { ok: false, msg: 'Invalid username or password.' };
-  localStorage.setItem(ADMIN_AUTH_KEY, JSON.stringify({ username: match.username, name: match.name }));
-  return { ok: true };
+  return null;
 }
 
 function logoutAdmin() {
-  localStorage.removeItem(ADMIN_AUTH_KEY);
-  window.location.href = 'login.html?tab=admin';
+  logoutUser();
 }
 
 function requireAdmin() {
   if (!getAdmin()) {
-    window.location.href = 'login.html?tab=admin';
+    window.location.href = 'login.html';
   }
 }
 
@@ -92,7 +76,8 @@ async function loginUser(email, password) {
     const user = {
       id: data.user?.id || null,
       name: data.user?.name || email.split('@')[0],
-      email: data.user?.email || email
+      email: data.user?.email || email,
+      role: data.user?.role || 'USER'
     };
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
     localStorage.setItem('authToken', data.token || '');

@@ -179,7 +179,6 @@
       <!-- Tabs -->
       <div class="auth-tabs">
         <button class="auth-tab-btn active" id="tabLogin"    onclick="switchTab('login')">Login</button>
-        <button class="auth-tab-btn admin-tab" id="tabAdmin" onclick="switchTab('admin')">🛡️ Admin</button>
       </div>
 
       <div class="auth-body">
@@ -266,29 +265,6 @@
           </div>
         </div>
 
-        <!-- ── ADMIN LOGIN PANEL ── -->
-        <div class="tab-panel" id="panelAdmin">
-          <div class="auth-title">🛡️ Admin Portal</div>
-          <div class="auth-subtitle">Restricted access — authorized personnel only</div>
-
-          <div class="msg-box msg-error" id="adminErr"></div>
-
-          <form id="adminForm">
-            <div class="field-group">
-              <label for="adminUser">Username</label>
-              <input type="text" id="adminUser" placeholder="Enter admin username" autocomplete="username">
-            </div>
-            <div class="field-group">
-              <label for="adminPass">Password</label>
-              <input type="password" id="adminPass" placeholder="Enter admin password" autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn-auth btn-admin">Access Dashboard →</button>
-          </form>
-
-          <div class="hint-box">
-            Default: <code>admin</code> / <code>admin123</code>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -298,34 +274,29 @@
 
   <script src="js/auth.js"></script>
   <script>
-    // Redirect if already logged in as user
+    // Redirect if already logged in
     if (typeof getCurrentUser === 'function' && getCurrentUser()) {
-      var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-      window.location.href = redirect;
-    }
-    // Redirect if already logged in as admin
-    if (typeof getAdmin === 'function' && getAdmin()) {
-      window.location.href = 'admin.html';
+      var user = getCurrentUser();
+      if (user.role === 'ADMIN') {
+        window.location.href = 'admin.html';
+      } else {
+        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+        window.location.href = redirect;
+      }
     }
 
     // ── Tab switching ──
     function switchTab(tab) {
-      ['login', 'register', 'admin', 'forgot'].forEach(function(t) {
+      ['login', 'register', 'forgot'].forEach(function(t) {
         var panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
         if (panel) panel.classList.toggle('active', t === tab);
       });
-      ['tabLogin', 'tabRegister', 'tabAdmin'].forEach(function(id) {
+      ['tabLogin', 'tabRegister'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.classList.remove('active');
       });
       if (tab === 'login')    document.getElementById('tabLogin').classList.add('active');
       if (tab === 'register') document.getElementById('tabRegister') && document.getElementById('tabRegister').classList.add('active');
-      if (tab === 'admin')    document.getElementById('tabAdmin').classList.add('active');
-    }
-
-    // Open admin tab if URL has ?tab=admin
-    if (new URLSearchParams(window.location.search).get('tab') === 'admin') {
-      switchTab('admin');
     }
 
     // ── Message helpers ──
@@ -348,8 +319,12 @@
       var result = await loginUser(email, password);
       if (!result.ok) { showMsg('loginErr', result.msg); return; }
 
-      var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-      window.location.href = redirect;
+      if (result.user.role === 'ADMIN') {
+        window.location.href = 'admin.html';
+      } else {
+        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+        window.location.href = redirect;
+      }
     });
 
     // ── Register ──
@@ -376,26 +351,6 @@
         var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
         window.location.href = redirect;
       }, 1200);
-    });
-
-    // ── Admin Login ──
-    document.getElementById('adminForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      hideMsg('adminErr');
-      var username = document.getElementById('adminUser').value.trim();
-      var password = document.getElementById('adminPass').value;
-
-      if (!username || !password) { showMsg('adminErr', 'Please enter username and password.'); return; }
-
-      var result = loginAdmin(username, password);
-      if (!result.ok) {
-        showMsg('adminErr', result.msg);
-        document.getElementById('adminPass').value = '';
-        document.getElementById('adminPass').focus();
-        return;
-      }
-
-      window.location.href = 'admin.html';
     });
 
     // ── Forgot Password ──

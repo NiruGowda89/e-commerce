@@ -59,7 +59,7 @@ public class AuthController {
                 .filter(u -> passwordEncoder.matches(password, u.getPassword()))
                 .map(u -> ResponseEntity.ok(Map.of(
                         "token", "sample-jwt-token",
-                        "user", Map.of("id", u.getUserId(), "name", u.getName(), "email", u.getEmail())
+                        "user", Map.of("id", u.getUserId(), "name", u.getName(), "email", u.getEmail(), "role", u.getRole().name())
                 )))
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials")));
     }
