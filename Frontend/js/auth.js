@@ -101,8 +101,15 @@ function refreshAuthNav() {
   var user = getCurrentUser();
 
   if (user) {
+    let menuHtml = '';
+    if (user.role === 'ADMIN') {
+        menuHtml = '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
+    } else {
+        menuHtml = '<a class="dropdown-item" href="orders.html">📦 My Orders</a>';
+    }
+    
+    authEl.className = 'nav-item dropdown';
     authEl.innerHTML =
-      '<li class="nav-item dropdown">' +
         '<a class="nav-link dropdown-toggle" href="#" id="userDropdown" ' +
            'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
           '👤 ' + user.name.split(' ')[0] +
@@ -110,19 +117,17 @@ function refreshAuthNav() {
         '<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">' +
           '<span class="dropdown-item-text text-muted small">' + user.email + '</span>' +
           '<div class="dropdown-divider"></div>' +
-          '<a class="dropdown-item" href="orders.html">📦 My Orders</a>' +
+          menuHtml +
           '<div class="dropdown-divider"></div>' +
           '<a class="dropdown-item text-danger" href="#" onclick="logoutUser();return false;">🚪 Logout</a>' +
-        '</div>' +
-      '</li>';
+        '</div>';
   } else {
+    authEl.className = 'nav-item';
     authEl.innerHTML =
-      '<li class="nav-item">' +
         '<a class="nav-link font-weight-bold" href="login.html" ' +
            'style="color:#ffc107;border:1px solid #ffc107;border-radius:6px;padding:5px 12px;margin-left:4px;">' +
           '👤 Login' +
-        '</a>' +
-      '</li>';
+        '</a>';
   }
 }
 
