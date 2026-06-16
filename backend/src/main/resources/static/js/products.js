@@ -1,5 +1,8 @@
-// Backend API URL (replace with your actual Render backend domain)
-const API_URL = "https://e-commerce-1-ariz.onrender.com/api"; 
+if (typeof API_URL === "undefined") {
+  window.API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+}
+var API_URL = window.API_URL;
+
 
 // Load all products from backend
 async function loadProducts() {

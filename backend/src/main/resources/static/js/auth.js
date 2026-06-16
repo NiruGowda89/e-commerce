@@ -1,42 +1,30 @@
-const API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+if (typeof API_URL === "undefined") {
+  window.API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+}
+var API_URL = window.API_URL;
+
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 var AUTH_KEY       = 'urbanManUser';
 var ADMIN_AUTH_KEY = 'urbanManAdmin';
 
-// ─── Admin Credentials ─────────────────────────────────────────────────────────
-var ADMIN_CREDENTIALS = [
-  { username: 'admin',    password: 'admin123',  name: 'Super Admin'    },
-  { username: 'karunada', password: 'karu@2026', name: 'Karunada Admin' }
-];
+// ─── Admin Role Checks ─────────────────────────────────────────────────────────
 
 function getAdmin() {
-  try { return JSON.parse(localStorage.getItem(ADMIN_AUTH_KEY) || 'null'); }
-  catch(e) { return null; }
-}
-
-function loginAdmin(username, password) {
-  var match = null;
-  for (var i = 0; i < ADMIN_CREDENTIALS.length; i++) {
-    if (ADMIN_CREDENTIALS[i].username === username.trim() &&
-        ADMIN_CREDENTIALS[i].password === password) {
-      match = ADMIN_CREDENTIALS[i];
-      break;
-    }
+  const user = getCurrentUser();
+  if (user && user.role === 'ADMIN') {
+    return user;
   }
-  if (!match) return { ok: false, msg: 'Invalid username or password.' };
-  localStorage.setItem(ADMIN_AUTH_KEY, JSON.stringify({ username: match.username, name: match.name }));
-  return { ok: true };
+  return null;
 }
 
 function logoutAdmin() {
-  localStorage.removeItem(ADMIN_AUTH_KEY);
-  window.location.href = 'login.html?tab=admin';
+  logoutUser();
 }
 
 function requireAdmin() {
   if (!getAdmin()) {
-    window.location.href = 'login.html?tab=admin';
+    window.location.href = 'login.html';
   }
 }
 
@@ -88,7 +76,8 @@ async function loginUser(email, password) {
     const user = {
       id: data.user?.id || null,
       name: data.user?.name || email.split('@')[0],
-      email: data.user?.email || email
+      email: data.user?.email || email,
+      role: data.user?.role || 'USER'
     };
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
     localStorage.setItem('authToken', data.token || '');
@@ -112,8 +101,15 @@ function refreshAuthNav() {
   var user = getCurrentUser();
 
   if (user) {
+    let menuHtml = '';
+    if (user.role === 'ADMIN') {
+        menuHtml = '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
+    } else {
+        menuHtml = '<a class="dropdown-item" href="orders.html">📦 My Orders</a>';
+    }
+    
+    authEl.className = 'nav-item dropdown';
     authEl.innerHTML =
-      '<li class="nav-item dropdown">' +
         '<a class="nav-link dropdown-toggle" href="#" id="userDropdown" ' +
            'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
           '👤 ' + user.name.split(' ')[0] +
@@ -121,19 +117,17 @@ function refreshAuthNav() {
         '<div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">' +
           '<span class="dropdown-item-text text-muted small">' + user.email + '</span>' +
           '<div class="dropdown-divider"></div>' +
-          '<a class="dropdown-item" href="orders.html">📦 My Orders</a>' +
+          menuHtml +
           '<div class="dropdown-divider"></div>' +
           '<a class="dropdown-item text-danger" href="#" onclick="logoutUser();return false;">🚪 Logout</a>' +
-        '</div>' +
-      '</li>';
+        '</div>';
   } else {
+    authEl.className = 'nav-item';
     authEl.innerHTML =
-      '<li class="nav-item">' +
         '<a class="nav-link font-weight-bold" href="login.html" ' +
            'style="color:#ffc107;border:1px solid #ffc107;border-radius:6px;padding:5px 12px;margin-left:4px;">' +
           '👤 Login' +
-        '</a>' +
-      '</li>';
+        '</a>';
   }
 }
 

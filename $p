@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="0; url=Frontend/$p">
+    <title>Redirecting...</title>
+    <script>
+        window.location.href = "Frontend/$p" + window.location.search;
+    </script>
+</head>
+<body>
+    <p>Redirecting... <a href="Frontend/$p">Click here</a>.</p>
+</body>
+</html>

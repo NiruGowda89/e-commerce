@@ -80,7 +80,7 @@ function starsHtml(rating) {
 async function loadReviews(productId) {
     currentProductId = productId;
     try {
-        const res = await fetch(API_BASE + '/reviews/product/' + productId);
+        const res = await fetch(API_URL + '/reviews/product/' + productId);
         const data = await res.json();
 
         const ratingBadge = document.getElementById('ratingBadge');
@@ -117,7 +117,7 @@ async function loadReviews(productId) {
 }
 
 async function submitReview() {
-    const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
     if (!user) {
         alert('Please login to submit a review.');
         window.location.href = 'login.html';
@@ -129,7 +129,7 @@ async function submitReview() {
     const msgEl   = document.getElementById('reviewMsg');
 
     try {
-        const res = await fetch(API_BASE + '/reviews', {
+        const res = await fetch(API_URL + '/reviews', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productId: currentProductId, userId: user.userId, rating, comment })
