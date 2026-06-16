@@ -1,4 +1,8 @@
-const API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+if (typeof API_URL === "undefined") {
+  window.API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+}
+var API_URL = window.API_URL;
+
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 var AUTH_KEY       = 'urbanManUser';

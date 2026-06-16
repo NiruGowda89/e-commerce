@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/coupons")
+@RequestMapping("/api/coupons")
 public class CouponController {
 
     @Autowired private CouponRepository couponRepo;
