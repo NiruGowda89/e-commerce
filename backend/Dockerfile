@@ -1,9 +1,10 @@
 # Stage 1 — Build with Maven + Java 21
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY pom.xml .
+COPY backend/pom.xml .
 RUN mvn dependency:go-offline -q
-COPY src ./src
+COPY backend/src ./src
+COPY Frontend ./src/main/resources/static
 RUN mvn clean package -DskipTests -q
 
 # Stage 2 — Run with lightweight JRE 21
