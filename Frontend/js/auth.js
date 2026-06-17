@@ -105,12 +105,15 @@ function refreshAuthNav() {
     if (user.role === 'ADMIN') {
         menuHtml = '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
     } else {
-        menuHtml = '<a class="dropdown-item" href="orders.html">📦 My Orders</a>';
+        menuHtml =
+            '<a class="dropdown-item" href="account.html#profile">👤 My Account</a>' +
+            '<a class="dropdown-item" href="account.html#orders">📦 My Orders</a>' +
+            '<a class="dropdown-item" href="account.html#wishlist">❤️ Wishlist</a>';
     }
-    
+
     authEl.className = 'nav-item dropdown';
     authEl.innerHTML =
-        '<a class="nav-link dropdown-toggle" href="#" id="userDropdown" ' +
+        '<a class="nav-link dropdown-toggle" href="account.html" id="userDropdown" ' +
            'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
           '👤 ' + user.name.split(' ')[0] +
         '</a>' +

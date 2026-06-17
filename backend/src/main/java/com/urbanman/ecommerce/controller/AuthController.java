@@ -2,6 +2,7 @@ package com.urbanman.ecommerce.controller;
 
 import com.urbanman.ecommerce.model.User;
 import com.urbanman.ecommerce.repository.UserRepository;
+import com.urbanman.ecommerce.config.JwtUtil;
 import com.urbanman.ecommerce.service.EmailService;
 import com.urbanman.ecommerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,15 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepo;
     private final EmailService emailService;
+    private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AuthController(UserService userService, UserRepository userRepo, EmailService emailService) {
+    public AuthController(UserService userService, UserRepository userRepo, EmailService emailService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.userRepo = userRepo;
         this.emailService = emailService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
@@ -57,10 +60,13 @@ public class AuthController {
 
         return userRepo.findByEmail(email)
                 .filter(u -> passwordEncoder.matches(password, u.getPassword()))
-                .map(u -> ResponseEntity.ok(Map.of(
-                        "token", "sample-jwt-token",
+                .map(u -> {
+                    String token = jwtUtil.generateToken(u.getEmail(), u.getRole().name());
+                    return ResponseEntity.ok(Map.of(
+                        "token", token,
                         "user", Map.of("id", u.getUserId(), "name", u.getName(), "email", u.getEmail(), "role", u.getRole().name())
-                )))
+                    ));
+                })
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials")));
     }
 

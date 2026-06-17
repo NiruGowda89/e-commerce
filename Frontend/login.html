@@ -2,239 +2,331 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0c29">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Login – Karunada Collection</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
+    html, body {
+      height: 100%;
       min-height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: -webkit-fill-available;
+      font-family: 'Segoe UI', 'Poppins', sans-serif;
+      background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      overflow-x: hidden;
+    }
+
+    /* ── Full-screen mobile app shell ── */
+    .login-shell {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
     }
 
-    .auth-wrapper {
-      flex: 1;
+    /* ── Compact mobile header (replaces heavy navbar in APK) ── */
+    .login-header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 12px) 20px 12px;
+      padding-top: max(env(safe-area-inset-top), 12px);
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .login-header-brand {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #ffc107;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+    }
+    .login-header-brand:hover { color: #ffc107; text-decoration: none; }
+    .login-header-links { display: flex; gap: 12px; }
+    .login-header-links a {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: background 0.2s;
+    }
+    .login-header-links a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ── Scrollable content area ── */
+    .login-scroll {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
       justify-content: center;
-      padding: 40px 16px;
+      padding: 24px 16px max(env(safe-area-inset-bottom), 24px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
+    /* ── Auth card ── */
     .auth-box {
       width: 100%;
-      max-width: 460px;
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
+      max-width: 420px;
+      background: #fff;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45);
     }
 
     /* ── Tabs ── */
     .auth-tabs {
       display: flex;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
     }
     .auth-tab-btn {
       flex: 1;
-      padding: 16px;
+      padding: 14px 8px;
       background: none;
       border: none;
-      color: rgba(255,255,255,0.5);
-      font-size: 0.95rem;
+      color: #6c757d;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.2s;
       position: relative;
     }
     .auth-tab-btn.active { color: #ffc107; }
     .auth-tab-btn.active::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 20%; right: 20%;
+      bottom: -2px; left: 15%; right: 15%;
       height: 3px;
       background: #ffc107;
       border-radius: 3px 3px 0 0;
     }
-    /* Admin tab accent */
-    .auth-tab-btn.admin-tab.active { color: #e74c3c; }
+    .auth-tab-btn.admin-tab.active       { color: #e74c3c; }
     .auth-tab-btn.admin-tab.active::after { background: #e74c3c; }
 
-    /* ── Form Body ── */
-    .auth-body { padding: 32px; }
+    /* ── Form body ── */
+    .auth-body { padding: 28px 24px; }
 
-    .auth-title { color: #fff; font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-    .auth-subtitle { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 28px; }
+    /* Brand icon in form */
+    .auth-brand-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #302b63, #0f3460);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 16px rgba(48,43,99,0.3);
+    }
 
-    .field-group { margin-bottom: 18px; }
+    .auth-title    { color: #1a1a2e; font-size: 1.25rem; font-weight: 800; margin-bottom: 4px; text-align: center; }
+    .auth-subtitle { color: #6b7280; font-size: 0.82rem; margin-bottom: 24px; text-align: center; }
+
+    /* ── Fields ── */
+    .field-group { margin-bottom: 16px; }
     .field-group label {
       display: block;
-      color: rgba(255,255,255,0.7);
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
+      color: #374151;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 5px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
     }
     .field-group input {
       width: 100%;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
+      padding: 13px 14px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
       border-radius: 10px;
-      color: #fff;
+      color: #1a1a2e;
       font-size: 0.95rem;
       transition: border 0.2s, background 0.2s;
       outline: none;
+      -webkit-appearance: none;
+      appearance: none;
     }
-    .field-group input::placeholder { color: rgba(255,255,255,0.3); }
-    .field-group input:focus { border-color: #ffc107; background: rgba(255,255,255,0.12); }
-    #panelAdmin .field-group input:focus { border-color: #e74c3c; }
+    .field-group input::placeholder { color: #9ca3af; }
+    .field-group input:focus {
+      border-color: #ffc107;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,193,7,0.15);
+    }
+    #panelAdmin .field-group input:focus {
+      border-color: #e74c3c;
+      box-shadow: 0 0 0 3px rgba(231,76,60,0.12);
+    }
 
     /* ── Buttons ── */
     .btn-auth {
       width: 100%;
       padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-top: 8px;
+      transition: transform 0.15s, box-shadow 0.2s;
+      margin-top: 6px;
+      letter-spacing: 0.2px;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn-auth:hover  { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-    .btn-auth:active { transform: translateY(0); }
-
-    .btn-login  { background: linear-gradient(135deg, #ffc107, #ff9800); color: #1a1a2e; }
-    .btn-signup { background: linear-gradient(135deg, #00b09b, #96c93d); color: #fff; }
-    .btn-admin  { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff; }
+    .btn-auth:active { transform: scale(0.98); }
+    .btn-login  { background: linear-gradient(135deg, #ffc107, #ff9800); color: #1a1a2e; box-shadow: 0 4px 16px rgba(255,193,7,0.35); }
+    .btn-signup { background: linear-gradient(135deg, #00b09b, #00c471); color: #fff;    box-shadow: 0 4px 16px rgba(0,176,155,0.35); }
+    .btn-admin  { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff;    box-shadow: 0 4px 16px rgba(192,57,43,0.35); }
 
     /* ── Messages ── */
     .msg-box {
       padding: 10px 14px;
       border-radius: 8px;
-      font-size: 0.9rem;
-      margin-bottom: 16px;
+      font-size: 0.85rem;
+      margin-bottom: 14px;
       display: none;
+      font-weight: 500;
     }
-    .msg-error   { background: rgba(220,53,69,0.2);  border: 1px solid rgba(220,53,69,0.5);  color: #ff6b6b; }
-    .msg-success { background: rgba(40,167,69,0.2);  border: 1px solid rgba(40,167,69,0.5);  color: #69db7c; }
+    .msg-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+    .msg-success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; }
 
-    .switch-link { text-align: center; margin-top: 20px; color: rgba(255,255,255,0.4); font-size: 0.88rem; }
-    .switch-link a { color: #ffc107; text-decoration: none; font-weight: 600; }
+    .switch-link {
+      text-align: center;
+      margin-top: 18px;
+      color: #6b7280;
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+    .switch-link a { color: #ffc107; text-decoration: none; font-weight: 700; }
     .switch-link a:hover { text-decoration: underline; }
 
-    /* Admin hint */
+    /* ── Admin hint ── */
     .hint-box {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: #fef9e7;
+      border: 1px solid #fde68a;
       border-radius: 8px;
       padding: 10px 14px;
-      margin-top: 16px;
-      color: rgba(255,255,255,0.35);
+      margin-top: 14px;
+      color: #78350f;
       font-size: 0.78rem;
       text-align: center;
     }
-    .hint-box code { background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 4px; color: rgba(255,200,100,0.8); }
-
-    /* Admin badge on tab */
-    .shield-icon { font-size: 0.85rem; margin-right: 4px; }
+    .hint-box code {
+      background: rgba(251,191,36,0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #92400e;
+      font-weight: 700;
+    }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    .bottom-bar { text-align: center; padding: 16px; color: rgba(255,255,255,0.3); font-size: 0.8rem; }
+    /* ── Bottom safe area ── */
+    .login-footer {
+      text-align: center;
+      padding: 12px 16px max(env(safe-area-inset-bottom), 12px);
+      color: rgba(255,255,255,0.3);
+      font-size: 0.75rem;
+    }
+
+    /* ── Support link at bottom of card ── */
+    .support-row {
+      text-align: center;
+      padding: 12px 24px 20px;
+      border-top: 1px solid #f3f4f6;
+      background: #fafafa;
+    }
+    .support-row a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #374151;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .support-row a:hover { color: #16a34a; }
+
+    /* ── Mobile-first responsive tweaks ── */
+    @media (max-width: 480px) {
+      .login-scroll  { padding: 16px 12px max(env(safe-area-inset-bottom), 16px); align-items: flex-start; }
+      .auth-body     { padding: 22px 18px; }
+      .auth-title    { font-size: 1.1rem; }
+      .auth-brand-icon { width: 48px; height: 48px; font-size: 1.3rem; }
+      .auth-box      { border-radius: 16px; }
+    }
   </style>
 </head>
 <body>
+<div class="login-shell">
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="index.html">Karunada Collection</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
-        <li class="nav-item"><a class="nav-link" href="new-arrivals.html">New Arrivals</a></li>
-        <li class="nav-item"><a class="nav-link" href="offers.html">Offers</a></li>
-      </ul>
-      <form class="form-inline mx-2" onsubmit="doSearch(event)">
-        <div class="input-group">
-          <input class="form-control form-control-sm" type="search" id="globalSearch"
-                 placeholder="Search products…" style="width:180px;">
-          <div class="input-group-append">
-            <button class="btn btn-outline-light btn-sm" type="submit">🔍</button>
-          </div>
-        </div>
-      </form>
-      <ul class="navbar-nav ml-2">
-        <li class="nav-item">
-          <a class="nav-link" href="cart.html">🛒 <span id="cartCount" class="badge badge-light ml-1"></span></a>
-        </li>
-        <li id="authNav" class="nav-item">
-          <a class="nav-link font-weight-bold" href="login.html" style="color:#ffc107;border:1px solid #ffc107;border-radius:6px;padding:5px 12px;margin-left:4px;">👤 Login</a>
-        </li>
-      </ul>
+  <!-- ── Compact header ── -->
+  <header class="login-header">
+    <a class="login-header-brand" href="index.html">🛍️ Karunada</a>
+    <div class="login-header-links">
+      <a href="shop.html">Shop</a>
+      <a href="cart.html">🛒 Cart</a>
     </div>
-  </nav>
+  </header>
 
-  <div class="auth-wrapper">
+  <!-- ── Scrollable area ── -->
+  <div class="login-scroll">
     <div class="auth-box">
 
       <!-- Tabs -->
       <div class="auth-tabs">
         <button class="auth-tab-btn active" id="tabLogin"    onclick="switchTab('login')">Login</button>
+        <button class="auth-tab-btn"        id="tabRegister" onclick="switchTab('register')">Register</button>
+        <button class="auth-tab-btn admin-tab" id="tabAdmin" onclick="switchTab('admin')">Admin</button>
       </div>
 
       <div class="auth-body">
 
-        <!-- ── USER LOGIN PANEL ── -->
+        <!-- ── LOGIN PANEL ── -->
         <div class="tab-panel active" id="panelLogin">
-          <div class="auth-title">Welcome back 👋</div>
+          <div class="auth-brand-icon">👋</div>
+          <div class="auth-title">Welcome back!</div>
           <div class="auth-subtitle">Sign in to your account</div>
-
           <div class="msg-box msg-error" id="loginErr"></div>
-
           <form id="loginForm">
             <div class="field-group">
-              <label for="loginEmail">Email Address</label>
-              <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+              <label>Email Address</label>
+              <input type="email" id="loginEmail" placeholder="you@example.com"
+                     autocomplete="email" inputmode="email">
             </div>
             <div class="field-group">
-              <label for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+              <label>Password</label>
+              <input type="password" id="loginPassword" placeholder="Your password"
+                     autocomplete="current-password">
             </div>
             <button type="submit" class="btn-auth btn-login">Sign In →</button>
           </form>
-
           <div class="switch-link">
             New here? <a href="#" onclick="switchTab('register');return false;">Create an account</a>
-            &nbsp;|&nbsp; <a href="#" onclick="switchTab('forgot');return false;">Forgot password?</a>
+            &nbsp;·&nbsp;
+            <a href="#" onclick="switchTab('forgot');return false;">Forgot password?</a>
           </div>
         </div>
 
         <!-- ── FORGOT PASSWORD PANEL ── -->
         <div class="tab-panel" id="panelForgot">
-          <div class="auth-title">Reset Password 🔑</div>
-          <div class="auth-subtitle">Enter your registered email to reset</div>
-
+          <div class="auth-brand-icon">🔑</div>
+          <div class="auth-title">Reset Password</div>
+          <div class="auth-subtitle">Enter your registered email</div>
           <div class="msg-box msg-error"   id="forgotErr"></div>
           <div class="msg-box msg-success" id="forgotOk"></div>
-
           <form id="forgotForm">
             <div class="field-group">
-              <label for="forgotEmail">Email Address</label>
-              <input type="email" id="forgotEmail" placeholder="you@example.com">
+              <label>Email Address</label>
+              <input type="email" id="forgotEmail" placeholder="you@example.com" inputmode="email">
             </div>
             <button type="submit" class="btn-auth btn-login">Send Reset Link →</button>
           </form>
@@ -245,133 +337,175 @@
 
         <!-- ── REGISTER PANEL ── -->
         <div class="tab-panel" id="panelRegister">
-          <div class="auth-title">Create Account 🎉</div>
+          <div class="auth-brand-icon">🎉</div>
+          <div class="auth-title">Create Account</div>
           <div class="auth-subtitle">Join Karunada Collection today</div>
-
           <div class="msg-box msg-error"   id="regErr"></div>
           <div class="msg-box msg-success" id="regOk"></div>
-
           <form id="registerForm">
             <div class="field-group">
-              <label for="regName">Full Name</label>
-              <input type="text" id="regName" placeholder="Your full name" autocomplete="name">
+              <label>Full Name</label>
+              <input type="text" id="regName" placeholder="Your full name"
+                     autocomplete="name" autocapitalize="words">
             </div>
             <div class="field-group">
-              <label for="regEmail">Email Address</label>
-              <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
+              <label>Email Address</label>
+              <input type="email" id="regEmail" placeholder="you@example.com"
+                     autocomplete="email" inputmode="email">
             </div>
             <div class="field-group">
-              <label for="regPhone">Phone Number</label>
-              <input type="tel" id="regPhone" placeholder="10-digit mobile number" autocomplete="tel">
+              <label>Phone Number</label>
+              <input type="tel" id="regPhone" placeholder="10-digit mobile"
+                     autocomplete="tel" inputmode="tel">
             </div>
             <div class="field-group">
-              <label for="regPassword">Password</label>
-              <input type="password" id="regPassword" placeholder="Min 6 characters" autocomplete="new-password">
+              <label>Password</label>
+              <input type="password" id="regPassword" placeholder="Min 6 characters"
+                     autocomplete="new-password">
             </div>
             <div class="field-group">
-              <label for="regConfirm">Confirm Password</label>
-              <input type="password" id="regConfirm" placeholder="Repeat password" autocomplete="new-password">
+              <label>Confirm Password</label>
+              <input type="password" id="regConfirm" placeholder="Repeat password"
+                     autocomplete="new-password">
             </div>
             <button type="submit" class="btn-auth btn-signup">Create Account →</button>
           </form>
-
           <div class="switch-link">
             Already have an account? <a href="#" onclick="switchTab('login');return false;">Sign in</a>
           </div>
         </div>
 
+        <!-- ── ADMIN PANEL ── -->
+        <div class="tab-panel" id="panelAdmin">
+          <div class="auth-brand-icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">🛡️</div>
+          <div class="auth-title">Admin Login</div>
+          <div class="auth-subtitle">Restricted access</div>
+          <div class="msg-box msg-error" id="adminErr"></div>
+          <form id="adminForm">
+            <div class="field-group">
+              <label>Admin Email</label>
+              <input type="email" id="adminEmail" placeholder="admin@example.com" inputmode="email">
+            </div>
+            <div class="field-group">
+              <label>Admin Password</label>
+              <input type="password" id="adminPassword" placeholder="Admin password">
+            </div>
+            <button type="submit" class="btn-auth btn-admin">Admin Sign In →</button>
+          </form>
+          <div class="hint-box">
+            Default: <code>admin@karunada.com</code> / <code>admin123</code>
+          </div>
+        </div>
 
+      </div><!-- /auth-body -->
+
+      <!-- Support row at bottom of card -->
+      <div class="support-row">
+        <a href="tel:+917899648380">
+          <span>📞</span> Need help? Call +91 78996 48380
+        </a>
       </div>
-    </div>
-  </div>
 
-  <div class="bottom-bar">&copy; 2026 Karunada Collection. All rights reserved.</div>
+    </div><!-- /auth-box -->
+  </div><!-- /login-scroll -->
+
+  <div class="login-footer">&copy; 2026 Karunada Collection. All rights reserved.</div>
+
+</div><!-- /login-shell -->
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/search.js"></script>
   <script>
     // Redirect if already logged in
-    if (typeof getCurrentUser === 'function' && getCurrentUser()) {
-      var user = getCurrentUser();
-      if (user.role === 'ADMIN') {
-        window.location.href = 'admin.html';
-      } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof getCurrentUser === 'function' && getCurrentUser()) {
+        var user = getCurrentUser();
+        if (user.role === 'ADMIN') { window.location.href = 'admin.html'; return; }
         var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
         window.location.href = redirect;
       }
-    }
+    });
 
     // ── Tab switching ──
     function switchTab(tab) {
-      ['login', 'register', 'forgot'].forEach(function(t) {
-        var panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (panel) panel.classList.toggle('active', t === tab);
+      ['login','register','forgot','admin'].forEach(function(t) {
+        var p = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (p) p.classList.toggle('active', t === tab);
       });
-      ['tabLogin', 'tabRegister'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.remove('active');
+      ['Login','Register','Admin'].forEach(function(t) {
+        var b = document.getElementById('tab' + t);
+        if (b) b.classList.remove('active');
       });
-      if (tab === 'login')    document.getElementById('tabLogin').classList.add('active');
-      if (tab === 'register') document.getElementById('tabRegister') && document.getElementById('tabRegister').classList.add('active');
+      var activeTab = { login:'Login', register:'Register', admin:'Admin', forgot:'Login' }[tab];
+      if (activeTab) {
+        var el = document.getElementById('tab' + activeTab);
+        if (el) el.classList.add('active');
+      }
     }
 
-    // ── Message helpers ──
-    function showMsg(id, msg) {
-      var el = document.getElementById(id);
-      el.textContent = msg;
-      el.style.display = 'block';
-    }
-    function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
+    function showMsg(id, msg) { var e=document.getElementById(id); if(e){e.textContent=msg;e.style.display='block';} }
+    function hideMsg(id)      { var e=document.getElementById(id); if(e) e.style.display='none'; }
 
-    // ── User Login ──
+    // ── Login ──
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       hideMsg('loginErr');
-      var email    = document.getElementById('loginEmail').value.trim();
-      var password = document.getElementById('loginPassword').value;
-
-      if (!email || !password) { showMsg('loginErr', 'Please fill in all fields.'); return; }
-
-      var result = await loginUser(email, password);
+      var email = document.getElementById('loginEmail').value.trim();
+      var pass  = document.getElementById('loginPassword').value;
+      if (!email || !pass) { showMsg('loginErr','Please fill in all fields.'); return; }
+      var btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Signing in…'; btn.disabled = true;
+      var result = await loginUser(email, pass);
+      btn.textContent = 'Sign In →'; btn.disabled = false;
       if (!result.ok) { showMsg('loginErr', result.msg); return; }
-
-      if (result.user.role === 'ADMIN') {
-        window.location.href = 'admin.html';
-      } else {
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
-      }
+      if (result.user.role === 'ADMIN') { window.location.href = 'admin.html'; return; }
+      var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      window.location.href = redirect;
     });
 
     // ── Register ──
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       hideMsg('regErr'); hideMsg('regOk');
-      var name     = document.getElementById('regName').value.trim();
-      var email    = document.getElementById('regEmail').value.trim();
-      var phone    = document.getElementById('regPhone').value.trim();
-      var password = document.getElementById('regPassword').value;
-      var confirm  = document.getElementById('regConfirm').value;
-
-      if (!name || !email || !phone || !password) { showMsg('regErr', 'All fields are required.'); return; }
-      if (!/^\S+@\S+\.\S+$/.test(email))          { showMsg('regErr', 'Enter a valid email.'); return; }
-      if (phone.length < 10)                       { showMsg('regErr', 'Enter a valid 10-digit phone.'); return; }
-      if (password.length < 6)                     { showMsg('regErr', 'Password must be at least 6 characters.'); return; }
-      if (password !== confirm)                    { showMsg('regErr', 'Passwords do not match.'); return; }
-
-      var result = await registerUser(name, email, phone, password);
+      var name  = document.getElementById('regName').value.trim();
+      var email = document.getElementById('regEmail').value.trim();
+      var phone = document.getElementById('regPhone').value.trim();
+      var pass  = document.getElementById('regPassword').value;
+      var conf  = document.getElementById('regConfirm').value;
+      if (!name||!email||!phone||!pass) { showMsg('regErr','All fields are required.'); return; }
+      if (!/^\S+@\S+\.\S+$/.test(email)) { showMsg('regErr','Enter a valid email.'); return; }
+      if (phone.length < 10)              { showMsg('regErr','Enter a valid 10-digit phone.'); return; }
+      if (pass.length < 6)                { showMsg('regErr','Password must be at least 6 characters.'); return; }
+      if (pass !== conf)                  { showMsg('regErr','Passwords do not match.'); return; }
+      var btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Creating…'; btn.disabled = true;
+      var result = await registerUser(name, email, phone, pass);
+      btn.textContent = 'Create Account →'; btn.disabled = false;
       if (!result.ok) { showMsg('regErr', result.msg); return; }
-
-      showMsg('regOk', '✅ Account created! Redirecting…');
+      showMsg('regOk','✅ Account created! Redirecting…');
       setTimeout(function() {
         var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
         window.location.href = redirect;
       }, 1200);
+    });
+
+    // ── Admin login ──
+    document.getElementById('adminForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideMsg('adminErr');
+      var email = document.getElementById('adminEmail').value.trim();
+      var pass  = document.getElementById('adminPassword').value;
+      if (!email || !pass) { showMsg('adminErr','Please fill in all fields.'); return; }
+      var btn = e.target.querySelector('button[type=submit]');
+      btn.textContent = 'Signing in…'; btn.disabled = true;
+      var result = await loginUser(email, pass);
+      btn.textContent = 'Admin Sign In →'; btn.disabled = false;
+      if (!result.ok) { showMsg('adminErr', result.msg); return; }
+      if (result.user.role !== 'ADMIN') { showMsg('adminErr','Access denied. Not an admin account.'); return; }
+      window.location.href = 'admin.html';
     });
 
     // ── Forgot Password ──
@@ -379,36 +513,16 @@
       e.preventDefault();
       hideMsg('forgotErr'); hideMsg('forgotOk');
       var email = document.getElementById('forgotEmail').value.trim();
-      if (!email) { showMsg('forgotErr', 'Please enter your email.'); return; }
-
-      // Check if user exists locally
-      var users = typeof getStoredUsers === 'function' ? getStoredUsers() : [];
-      var user = users.find(function(u) { return u.email.toLowerCase() === email.toLowerCase(); });
-
-      if (!user) {
-        // Try backend
-        fetch(API_URL + '/auth/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
-        }).then(function(r) {
-          if (r.ok) {
-            showMsg('forgotOk', '✅ Password reset link sent to ' + email + '. Check your inbox.');
-          } else {
-            showMsg('forgotErr', '❌ No account found with this email.');
-          }
-        }).catch(function() {
-          showMsg('forgotErr', '❌ No account found with this email.');
-        });
-        return;
-      }
-
-      // Local: generate temp password
-      var tempPass = 'Reset@' + Math.floor(1000 + Math.random() * 9000);
-      user.password = tempPass;
-      var allUsers = users;
-      localStorage.setItem('urbanManUsers', JSON.stringify(allUsers));
-      showMsg('forgotOk', '✅ Your temporary password is: ' + tempPass + ' — please change it after login.');
+      if (!email) { showMsg('forgotErr','Please enter your email.'); return; }
+      fetch(API_URL + '/auth/forgot-password', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email: email })
+      }).then(function(r) {
+        if (r.ok) showMsg('forgotOk','✅ Reset link sent to ' + email + '. Check your inbox.');
+        else      showMsg('forgotErr','❌ No account found with this email.');
+      }).catch(function() {
+        showMsg('forgotErr','❌ Could not reach server. Try again later.');
+      });
     });
   </script>
 </body>

@@ -1,5 +1,36 @@
 // ─── API Configuration ────────────────────────────────────────────────────────
-const API_BASE = 'https://e-commerce-1-ariz.onrender.com/api';
+var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8080/api'
+    : 'https://e-commerce-1-ariz.onrender.com/api';
+window.API_URL = API_BASE;
+window.API_BASE = API_BASE;
+
+// ─── Fetch Interceptor for JWT Authorization ───────────────────────────────────
+var originalFetch = window.fetch;
+window.fetch = function (resource, init) {
+    const token = localStorage.getItem('authToken');
+    const url = resource.toString();
+    // Intercept requests directed to our backend API base
+    if (token && (url.startsWith(API_BASE) || url.includes('/api/'))) {
+        init = init || {};
+        init.headers = init.headers || {};
+        if (init.headers instanceof Headers) {
+            if (!init.headers.has('Authorization')) {
+                init.headers.append('Authorization', 'Bearer ' + token);
+            }
+        } else if (Array.isArray(init.headers)) {
+            const hasAuth = init.headers.some(h => h[0].toLowerCase() === 'authorization');
+            if (!hasAuth) {
+                init.headers.push(['Authorization', 'Bearer ' + token]);
+            }
+        } else {
+            if (!init.headers['Authorization'] && !init.headers['authorization']) {
+                init.headers['Authorization'] = 'Bearer ' + token;
+            }
+        }
+    }
+    return originalFetch(resource, init);
+};
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 async function apiGetProducts() {
