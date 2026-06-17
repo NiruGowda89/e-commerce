@@ -68,6 +68,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Load reviews
     loadReviews(product.id);
+
+    // Set for favourites/share
+    if (typeof setCurrentProduct === 'function') {
+        setCurrentProduct({
+            id:    product.id,
+            name:  product.name,
+            price: product.price,
+            image: product.image
+        });
+    }
 });
 
 // ─── Reviews ──────────────────────────────────────────────────────────────────

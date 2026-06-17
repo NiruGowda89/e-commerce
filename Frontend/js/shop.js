@@ -78,24 +78,63 @@ function renderProducts(list) {
         return;
     }
 
-    container.innerHTML = list.map(p => `
+    container.innerHTML = list.map(p => {
+        const faved = typeof isFavourite === 'function' && isFavourite(p.id);
+        return `
         <div class="col-md-3 mb-4">
-            <div class="card h-100">
-                <img src="${p.image}" class="card-img-top" alt="${p.name}"
-                     style="height:200px;object-fit:cover;"
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+            <div class="card h-100" style="position:relative;">
+                <!-- Favourite button -->
+                <button onclick="toggleFavBtn(${p.id}, '${p.name}', ${p.price}, '${p.image}')"
+                        id="fav-${p.id}"
+                        style="position:absolute;top:8px;right:8px;z-index:2;background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:36px;height:36px;font-size:1.1rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.2);"
+                        title="Save to favourites">${faved ? '❤️' : '🤍'}</button>
+
+                <a href="product.html?id=${p.id}">
+                    <img src="${p.image}" class="card-img-top" alt="${p.name}"
+                         style="height:200px;object-fit:cover;"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                </a>
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${p.name}</h5>
-                    <p class="card-text text-muted small">${p.category}</p>
-                    <p class="card-text font-weight-bold">₹${p.price}</p>
-                    <div class="mt-auto">
-                        <a href="product.html?id=${p.id}" class="btn btn-primary btn-sm">View</a>
-                        <button class="btn btn-secondary btn-sm ml-1"
+                    <h6 class="card-title mb-1">${p.name}</h6>
+                    <small class="text-muted">${p.category || ''}</small>
+                    <div id="rating-${p.id}" class="my-1 small text-warning">☆☆☆☆☆</div>
+                    <p class="font-weight-bold text-primary mb-2">₹${p.price}</p>
+                    <div class="mt-auto d-flex">
+                        <a href="product.html?id=${p.id}" class="btn btn-primary btn-sm flex-grow-1 mr-1">View</a>
+                        <button class="btn btn-secondary btn-sm flex-grow-1"
                                 onclick='addToCart(${JSON.stringify({id:p.id,name:p.name,price:p.price,image:p.image})});alert("Added to cart!")'>
-                            Add to Cart
+                            🛒
                         </button>
                     </div>
                 </div>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
+
+    // Load ratings for all products
+    list.forEach(p => loadProductRating(p.id));
+}
+
+async function loadProductRating(productId) {
+    try {
+        const res  = await fetch(API_BASE + '/reviews/product/' + productId);
+        const data = await res.json();
+        const el   = document.getElementById('rating-' + productId);
+        if (!el) return;
+        if (data.totalReviews > 0) {
+            const full  = Math.round(data.averageRating);
+            const stars = '⭐'.repeat(full) + '☆'.repeat(5 - full);
+            el.innerHTML = `${stars} <span class="text-muted">(${data.totalReviews})</span>`;
+        } else {
+            el.innerHTML = '<span class="text-muted small">No reviews yet</span>';
+        }
+    } catch(e) { /* silent */ }
+}
+
+function toggleFavBtn(id, name, price, image) {
+    if (typeof toggleFavourite !== 'function') return;
+    const added = toggleFavourite({ id, name, price, image });
+    const btn = document.getElementById('fav-' + id);
+    if (btn) btn.textContent = added ? '❤️' : '🤍';
+    refreshFavBadge();
 }

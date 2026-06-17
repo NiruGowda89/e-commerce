@@ -37,6 +37,9 @@
             🛒 <span id="cartCount" class="badge badge-light ml-1"></span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="favourites.html">❤️ <span id="favCount" class="badge badge-danger ml-1"></span></a>
+        </li>
         <li id="authNav" class="nav-item">
           <a class="nav-link font-weight-bold" href="login.html" style="color:#ffc107;border:1px solid #ffc107;border-radius:6px;padding:5px 12px;margin-left:4px;">👤 Login</a>
         </li>
@@ -56,7 +59,24 @@
 
     <!-- Product Layout -->
     <div class="row" id="productLayout">
-      <div class="col-md-6 mb-4">
+      <div class="col-md-6 mb-4" style="position:relative;">
+        <!-- Action buttons above image -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <button id="favBtn" onclick="handleFavourite()"
+                  class="btn btn-outline-danger btn-sm">
+            🤍 Save to Favourites
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
+              🔗 Share
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item" href="#" onclick="shareWhatsApp()">📱 WhatsApp</a>
+              <a class="dropdown-item" href="#" onclick="shareFacebook()">📘 Facebook</a>
+              <a class="dropdown-item" href="#" onclick="copyLink()">📋 Copy Link</a>
+            </div>
+          </div>
+        </div>
         <img id="productImage" src="images/placeholder.jpg" class="img-fluid rounded shadow-sm" alt="Product Image" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'">
       </div>
       <div class="col-md-6">
@@ -142,6 +162,43 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/search.js"></script>
+  <script src="js/favourites.js"></script>
   <script src="js/product.js"></script>
+  <script>
+    // Share functions
+    function shareWhatsApp() {
+      const url = encodeURIComponent(window.location.href);
+      const name = document.getElementById('productName').textContent;
+      const price = document.getElementById('productPrice').textContent;
+      window.open('https://wa.me/?text=' + encodeURIComponent('Check out ' + name + ' for ₹' + price + ' at Karunada Collection: ' + window.location.href));
+    }
+    function shareFacebook() {
+      window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href));
+    }
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link copied to clipboard!');
+      }).catch(() => {
+        prompt('Copy this link:', window.location.href);
+      });
+    }
+
+    // Favourite handler — called after product is loaded
+    let _currentProduct = null;
+    function setCurrentProduct(p) { _currentProduct = p; updateFavBtn(); }
+    function updateFavBtn() {
+      const btn = document.getElementById('favBtn');
+      if (!btn || !_currentProduct) return;
+      const faved = isFavourite(_currentProduct.id);
+      btn.innerHTML = faved ? '❤️ Saved to Favourites' : '🤍 Save to Favourites';
+      btn.className = faved ? 'btn btn-danger btn-sm' : 'btn btn-outline-danger btn-sm';
+    }
+    function handleFavourite() {
+      if (!_currentProduct) return;
+      toggleFavourite(_currentProduct);
+      updateFavBtn();
+      refreshFavBadge();
+    }
+  </script>
 </body>
 </html>
