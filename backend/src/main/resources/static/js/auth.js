@@ -36,6 +36,22 @@ function getSuperAdmin() {
   return (user && user.role === 'SUPER_ADMIN') ? user : null;
 }
 
+function logoutAdmin() {
+  logoutUser();
+}
+
+function requireAdmin() {
+  if (!getAdmin()) {
+    window.location.href = 'login.html';
+  }
+}
+
+function requireSuperAdmin() {
+  if (!getSuperAdmin()) {
+    window.location.href = 'login.html';
+  }
+}
+
 // ─── User Auth ────────────────────────────────────────────────────────────────
 function getCurrentUser() {
   try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); }

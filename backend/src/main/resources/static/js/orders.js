@@ -7,10 +7,9 @@ function getOrders() {
 
 // Called from checkout.js after a successful order
 function saveOrder(order) {
-  const orders = getOrders();
-  order.id     = 'ORD-' + Date.now();
-  order.status = 'Confirmed';                        // ← auto-confirm
-  order.otp    = String(Math.floor(100000 + Math.random() * 900000)); // 6-digit OTP
+  const orders   = getOrders();
+  order.id       = 'ORD-' + Date.now();
+  order.status   = 'Confirmed';   // always auto-confirm on payment completion
   order.placedAt = order.placedAt || new Date().toISOString();
   orders.unshift(order);
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
@@ -26,27 +25,6 @@ function statusBadge(status) {
     'Cancelled':  'danger'
   };
   return `<span class="badge badge-${map[status] || 'secondary'} px-2 py-1">${status}</span>`;
-}
-
-// Status progress tracker
-function statusTracker(status) {
-  const steps    = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
-  const icons    = ['🕐', '✅', '🚚', '📦'];
-  if (status === 'Cancelled') {
-    return `<div class="alert alert-danger py-2 mb-0">
-              <strong>❌ Order Cancelled</strong>
-            </div>`;
-  }
-  const current = steps.indexOf(status);
-  return `<div class="d-flex align-items-center justify-content-between px-2 py-2 bg-light rounded">
-    ${steps.map((step, i) => `
-      <div class="text-center" style="flex:1;">
-        <div style="font-size:1.3rem;">${icons[i]}</div>
-        <div class="small font-weight-${i <= current ? 'bold' : 'normal'} 
-                    text-${i <= current ? 'success' : 'muted'}">${step}</div>
-        ${i < steps.length - 1 ? `<div style="position:relative;height:2px;background:${i < current ? '#28a745' : '#dee2e6'};margin:4px 0;"></div>` : ''}
-      </div>`).join('')}
-  </div>`;
 }
 
 // Delivery confirmation banner
@@ -100,26 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       <!-- Delivery confirmation banner -->
       ${deliveryBanner(order)}
-
-      <!-- Status tracker -->
-      <div class="px-3 pt-3">
-        ${statusTracker(order.status)}
-      </div>
-
-      <!-- OTP box for customer (shown when Confirmed or Shipped) -->
-      ${(order.status === 'Confirmed' || order.status === 'Shipped') && order.otp ? `
-      <div class="mx-3 mt-3">
-        <div class="alert alert-info d-flex align-items-center">
-          <span style="font-size:1.4rem;" class="mr-3">🔐</span>
-          <div>
-            <strong>Delivery OTP</strong><br>
-            <span style="font-size:1.8rem;letter-spacing:6px;font-weight:700;color:#0c5460;">
-              ${order.otp}
-            </span><br>
-            <small class="text-muted">Share this OTP with the delivery person to confirm delivery</small>
-          </div>
-        </div>
-      </div>` : ''}
 
       <div class="card-body">
         <!-- Items table -->
@@ -242,34 +200,16 @@ function clearOrderSearch() {
 
 // Build a single order card (extracted for reuse)
 function buildOrderCard(order) {
-  const steps   = ['Pending','Confirmed','Shipped','Delivered'];
-  const icons   = ['🕐','✅','🚚','📦'];
-  const current = steps.indexOf(order.status);
-  const colorMap = { Pending:'warning',Confirmed:'info',Shipped:'primary',Delivered:'success',Cancelled:'danger' };
-
-  const tracker = order.status === 'Cancelled'
-    ? `<div class="alert alert-danger py-2 mb-0"><strong>❌ Order Cancelled</strong></div>`
-    : `<div class="d-flex align-items-center justify-content-between px-2 py-2 bg-light rounded">
-        ${steps.map((s,i) => `
-          <div class="text-center" style="flex:1;">
-            <div style="font-size:1.3rem;">${icons[i]}</div>
-            <div class="small font-weight-${i<=current?'bold':'normal'} text-${i<=current?'success':'muted'}">${s}</div>
-          </div>`).join('')}
-       </div>`;
-
-  const otpBox = (order.status==='Confirmed'||order.status==='Shipped') && order.otp
-    ? `<div class="mx-3 mt-3"><div class="alert alert-info d-flex align-items-center">
-        <span style="font-size:1.4rem;" class="mr-3">🔐</span>
-        <div><strong>Delivery OTP</strong><br>
-          <span style="font-size:1.8rem;letter-spacing:6px;font-weight:700;color:#0c5460;">${order.otp}</span><br>
-          <small class="text-muted">Share this OTP with the delivery person</small>
-        </div></div></div>` : '';
+  const colorMap = { Pending:'warning', Confirmed:'info', Shipped:'primary', Delivered:'success', Cancelled:'danger' };
 
   const delivBanner = order.status === 'Delivered'
     ? `<div class="alert alert-success d-flex align-items-center mb-0">
         <span style="font-size:1.5rem;" class="mr-2">🎉</span>
         <div><strong>Your order has been delivered!</strong><br>
           <small>Thank you for shopping with us!</small></div></div>` : '';
+
+  const cancelBanner = order.status === 'Cancelled'
+    ? `<div class="alert alert-danger py-2 mb-2"><strong>❌ Order Cancelled</strong></div>` : '';
 
   return `
     <div class="card mb-4 ${order.status==='Delivered'?'border-success':''}">
@@ -284,8 +224,7 @@ function buildOrderCard(order) {
         </div>
       </div>
       ${delivBanner}
-      <div class="px-3 pt-3">${tracker}</div>
-      ${otpBox}
+      ${cancelBanner}
       <div class="card-body">
         <table class="table table-sm mb-3">
           <thead class="thead-light"><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
@@ -400,8 +339,6 @@ function downloadBill(order) {
       <tr class="grand-total"><td>GRAND TOTAL</td><td style="text-align:right;">₹${Number(grandTotal||0).toFixed(2)}</td></tr>
     </table>
   </div>
-  ${order.otp ? `<div class="section"><div class="section-title">DELIVERY OTP</div>
-    <div class="otp-box">Share with delivery person: <strong>${order.otp}</strong></div></div>` : ''}
   <div class="footer">
     <p>Thank you for shopping with Karunada Collection! | Computer-generated invoice.</p>
     <p>GST: 5% on items ≤ ₹2,500 | 18% on items above ₹2,500</p>

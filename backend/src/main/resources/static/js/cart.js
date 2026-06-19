@@ -39,7 +39,7 @@ function updateQty(productId, qty) {
   refreshCartBadge();
 }
 
-function getCartTotal()     { return getCart().reduce((s, i) => s + i.price * i.quantity, 0); }
+function getCartTotal()     { return getCart().reduce((s, i) => s + Number(i.price) * i.quantity, 0); }
 function getCartItemCount() { return getCart().reduce((s, i) => s + i.quantity, 0); }
 function clearCart()        { localStorage.removeItem(CART_KEY); refreshCartBadge(); }
 

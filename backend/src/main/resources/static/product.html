@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Product - Karunada Collection</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- ── Navbar ── -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="index.html">Karunada Collection</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
@@ -33,8 +33,8 @@
       </form>
       <ul class="navbar-nav ml-2">
         <li class="nav-item">
-          <a class="nav-link" href="cart.html">
-            🛒 <span id="cartCount" class="badge badge-light ml-1"></span>
+          <a class="nav-link cart-icon-link" href="cart.html">
+            🛒 <span id="cartCount" class="badge ml-1"></span>
           </a>
         </li>
         <li id="authNav" class="nav-item">
@@ -44,94 +44,238 @@
     </div>
   </nav>
 
-  <div class="container mt-4 mb-5">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-        <li class="breadcrumb-item"><a href="shop.html">Shop</a></li>
-        <li class="breadcrumb-item active" id="breadcrumbProduct">Product</li>
-      </ol>
-    </nav>
+  <!-- ── Loading Skeleton ── -->ading product…</p>
+  </div>
 
-    <!-- Product Layout -->
-    <div class="row" id="productLayout">
-      <div class="col-md-6 mb-4">
-        <img id="productImage" src="images/placeholder.jpg" class="img-fluid rounded shadow-sm" alt="Product Image" onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'">
-      </div>
-      <div class="col-md-6">
-        <h2 id="productName">Loading...</h2>
-        <h4 class="text-primary mb-3">₹<span id="productPrice">0</span></h4>
-        <div id="ratingBadge" class="mb-3"></div>
-        <p class="text-muted"><strong id="productCategory">Category</strong></p>
-        <p id="productDesc">Product description will appear here.</p>
-        
-        <div class="form-row mb-4">
-          <div class="col-6">
-            <label>Size</label>
-            <select class="form-control" id="sizeSelect">
-              <option value="S">Small (S)</option>
-              <option value="M">Medium (M)</option>
-              <option value="L">Large (L)</option>
-              <option value="XL">Extra Large (XL)</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label>Color</label>
-            <select class="form-control" id="colorSelect">
-              <option value="Black">Black</option>
-              <option value="Blue">Blue</option>
-              <option value="White">White</option>
-            </select>
-          </div>
-        </div>
+  <!-- ── Main Content (hidden until loaded) ── -->
+  <div id="pageContent" style="display:none;">
+    <div class="container-fluid px-3 px-md-4 mt-3 mb-5">
 
-        <div class="d-flex mb-4">
-          <button class="btn btn-warning btn-lg mr-3 flex-grow-1 font-weight-bold" id="addToCartBtn">🛒 Add to Cart</button>
-          <button class="btn btn-success btn-lg flex-grow-1 font-weight-bold" id="buyNowBtn">⚡ Buy Now</button>
-        </div>
-      </div>
-    </div>
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb pd-breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item"><a href="shop.html">Shop</a></li>
+          <li class="breadcrumb-item active" id="breadcrumbProduct">Product</li>
+        </ol>
+      </nav>
 
-    <!-- Reviews Section -->
-    <div class="mt-5">
-      <h4>Customer Reviews</h4>
-      <div class="row">
-        <div class="col-md-7" id="reviewsList">
-          <p class="text-muted">Loading reviews...</p>
-        </div>
-        <div class="col-md-5">
-          <div class="card bg-light">
-            <div class="card-body">
-              <h5 class="card-title">Write a Review</h5>
-              <div class="form-group">
-                <label>Rating</label>
-                <select id="reviewRating" class="form-control">
-                  <option value="5">5 - Excellent ⭐⭐⭐⭐⭐</option>
-                  <option value="4">4 - Good ⭐⭐⭐⭐</option>
-                  <option value="3">3 - Average ⭐⭐⭐</option>
-                  <option value="2">2 - Poor ⭐⭐</option>
-                  <option value="1">1 - Terrible ⭐</option>
-                </select>
+      <div class="row no-gutters pd-layout">
+
+        <!-- ════════════ LEFT: Image Gallery ════════════ -->
+        <div class="col-md-5 col-lg-4 pd-gallery-col">
+          <div class="pd-gallery-sticky">
+
+            <!-- Action icons (floating) -->
+            <div class="pd-gallery-actions">
+              <button id="favBtn" onclick="handleFavourite()" class="pd-action-btn" title="Wishlist">
+                <span id="favIcon">🤍</span>
+              </button>
+              <div class="dropdown">
+                <button class="pd-action-btn dropdown-toggle" data-toggle="dropdown" title="Share">
+                  ✈️
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <a class="dropdown-item" href="#" onclick="shareWhatsApp()">📱 WhatsApp</a>
+                  <a class="dropdown-item" href="#" onclick="shareFacebook()">📘 Facebook</a>
+                  <a class="dropdown-item" href="#" onclick="copyLink()">📋 Copy Link</a>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Comment</label>
-                <textarea id="reviewComment" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
-              </div>
-              <button class="btn btn-primary btn-block" onclick="submitReview()">Submit Review</button>
-              <div id="reviewMsg" class="mt-2 font-weight-bold text-center"></div>
+            </div>
+
+            <!-- Main image -->
+            <div class="pd-main-img-wrap">
+              <img id="productImage" src="" alt="Product"
+                   class="pd-main-img"
+                   onerror="this.src='https://via.placeholder.com/600x600?text=No+Image'">
+            </div>
+
+            <!-- Thumbnail strip -->
+            <div class="pd-thumbs" id="thumbStrip">
+              <!-- filled by JS -->
             </div>
           </div>
+        </div>
+
+        <!-- ════════════ RIGHT: Product Details ════════════ -->
+        <div class="col-md-7 col-lg-8 pd-details-col">
+          <div class="pd-details-inner">
+
+            <!-- Brand / title -->
+            <div class="pd-brand" id="productBrand">Karunada Collection</div>
+            <h1 class="pd-title" id="productName">Loading…</h1>
+
+            <!-- Rating row -->
+            <div class="pd-rating-row" id="ratingBadge">
+              <!-- filled by JS -->
+            </div>
+
+            <!-- Sale countdown -->
+            <div class="pd-countdown-bar" id="countdownBar">
+              <span class="pd-countdown-label">⚡ Sale ends in</span>
+              <span class="pd-countdown-block" id="cdHr">00</span>
+              <span class="pd-countdown-sep">Hr</span>
+              <span class="pd-countdown-block" id="cdMin">00</span>
+              <span class="pd-countdown-sep">Min</span>
+              <span class="pd-countdown-block" id="cdSec">00</span>
+              <span class="pd-countdown-sep">Sec</span>
+            </div>
+
+            <!-- Price -->
+            <div class="pd-price-row">
+              <span class="pd-price">₹<span id="productPrice">0</span></span>
+              <span class="pd-mrp" id="productMrp"></span>
+              <span class="pd-discount" id="productDiscount"></span>
+              <span class="pd-hotdeal-badge" id="hotDealBadge" style="display:none;">Hot Deal</span>
+            </div>
+
+            <hr class="pd-divider">
+
+            <!-- Color swatches -->
+            <div class="pd-section" id="colorSection">
+              <div class="pd-section-label">
+                Selected Color: <strong id="selectedColorName">—</strong>
+              </div>
+              <div class="pd-color-strip" id="colorStrip">
+                <!-- filled by JS -->
+              </div>
+            </div>
+
+            <!-- Size chips -->
+            <div class="pd-section">
+              <div class="pd-section-label d-flex align-items-center">
+                Select Size &nbsp;
+                <a href="#sizeGuideModal" data-toggle="modal" class="pd-size-chart-link">Size Chart</a>
+              </div>
+              <div class="pd-size-chips" id="sizeChips">
+                <!-- filled by JS -->
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="pd-section">
+              <p class="pd-desc" id="productDesc">Loading…</p>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="pd-cta-row">
+              <button class="pd-btn-cart" id="addToCartBtn">
+                🛒 Add to Cart
+              </button>
+              <button class="pd-btn-buy" id="buyNowBtn">
+                ⚡ Buy Now
+              </button>
+            </div>
+
+            <!-- Delivery info strip -->
+            <div class="pd-delivery-strip">
+              <div class="pd-delivery-item">
+                <span class="pd-delivery-icon">🚚</span>
+                <span>Free delivery on orders above ₹499</span>
+              </div>
+              <div class="pd-delivery-item">
+                <span class="pd-delivery-icon">🔄</span>
+                <span>7-day easy return</span>
+              </div>
+              <div class="pd-delivery-item">
+                <span class="pd-delivery-icon">✅</span>
+                <span>100% authentic product</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /row -->
+
+      <!-- ════════════ Reviews Section ════════════ -->
+      <div class="pd-reviews-section mt-5" id="reviewsSection">
+        <h4 class="pd-reviews-heading">Customer Reviews</h4>
+        <div class="row">
+          <!-- Review list -->
+          <div class="col-md-7 mb-4">
+            <div id="reviewsList">
+              <p class="text-muted">Loading reviews…</p>
+            </div>
+          </div>
+          <!-- Write review form -->
+          <div class="col-md-5">
+            <div class="pd-review-form card">
+              <div class="card-body">
+                <h5 class="card-title mb-3">✍️ Write a Review</h5>
+                <!-- Star picker -->
+                <div class="form-group">
+                  <label class="pd-form-label">Your Rating</label>
+                  <div class="pd-star-picker" id="starPicker">
+                    <span class="pd-star" data-val="1">★</span>
+                    <span class="pd-star" data-val="2">★</span>
+                    <span class="pd-star" data-val="3">★</span>
+                    <span class="pd-star" data-val="4">★</span>
+                    <span class="pd-star" data-val="5">★</span>
+                  </div>
+                  <input type="hidden" id="reviewRating" value="5">
+                </div>
+                <div class="form-group">
+                  <label class="pd-form-label">Comment</label>
+                  <textarea id="reviewComment" class="form-control" rows="3"
+                            placeholder="Share your experience…"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="pd-form-label">
+                    Add Photos <small class="text-muted">(optional, up to 3)</small>
+                  </label>
+                  <div class="pd-upload-area" id="uploadArea">
+                    <input type="file" class="pd-upload-input" id="reviewImages"
+                           accept="image/*" multiple>
+                    <div class="pd-upload-placeholder">
+                      <span style="font-size:1.5rem;">📷</span>
+                      <span>Click to add photos</span>
+                    </div>
+                  </div>
+                  <div id="reviewImagePreview" class="mt-2"></div>
+                </div>
+                <button class="btn btn-primary btn-block pd-submit-btn"
+                        onclick="submitReview()">Submit Review</button>
+                <div id="reviewMsg" class="mt-2 font-weight-bold text-center"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /container -->
+  </div><!-- /#pageContent -->
+
+  <!-- ── Size Guide Modal ── -->
+  <div class="modal fade" id="sizeGuideModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Size Chart</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body p-0">
+          <table class="table table-bordered table-sm mb-0 text-center">
+            <thead class="thead-dark">
+              <tr><th>Size</th><th>Chest (in)</th><th>Shoulder (in)</th><th>Length (in)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>S</td><td>36–38</td><td>16.5</td><td>27</td></tr>
+              <tr><td>M</td><td>38–40</td><td>17</td><td>27.5</td></tr>
+              <tr><td>L</td><td>40–42</td><td>17.5</td><td>28</td></tr>
+              <tr><td>XL</td><td>42–44</td><td>18</td><td>28.5</td></tr>
+              <tr><td>XXL</td><td>44–46</td><td>18.5</td><td>29</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- ── Footer ── -->
   <footer class="bg-dark text-white text-center p-3">
-    <p class="mb-0">&copy; 2026 Karunada Collection | 
-      <a href="index.html" class="text-light">Home</a> | 
-      <a href="shop.html" class="text-light">Shop</a> | 
+    <p class="mb-0">&copy; 2026 Karunada Collection |
+      <a href="index.html" class="text-light">Home</a> |
+      <a href="shop.html" class="text-light">Shop</a> |
       <a href="cart.html" class="text-light">Cart</a>
     </p>
   </footer>
@@ -142,6 +286,44 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/search.js"></script>
+  <script src="js/favourites.js"></script>
   <script src="js/product.js"></script>
+  <script>
+    /* ── Share helpers ── */
+    function shareWhatsApp() {
+      const name  = document.getElementById('productName').textContent;
+      const price = document.getElementById('productPrice').textContent;
+      window.open('https://wa.me/?text=' +
+        encodeURIComponent('Check out ' + name + ' for ₹' + price +
+          ' at Karunada Collection: ' + window.location.href));
+    }
+    function shareFacebook() {
+      window.open('https://www.facebook.com/sharer/sharer.php?u=' +
+        encodeURIComponent(window.location.href));
+    }
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => alert('Link copied!'))
+        .catch(() => prompt('Copy this link:', window.location.href));
+    }
+
+    /* ── Favourite handler (called after product is loaded by product.js) ── */
+    let _currentProduct = null;
+    function setCurrentProduct(p) { _currentProduct = p; updateFavBtn(); }
+    function updateFavBtn() {
+      const icon = document.getElementById('favIcon');
+      const btn  = document.getElementById('favBtn');
+      if (!icon || !_currentProduct) return;
+      const faved = typeof isFavourite === 'function' && isFavourite(_currentProduct.id);
+      icon.textContent  = faved ? '❤️' : '🤍';
+      btn.title         = faved ? 'Remove from Wishlist' : 'Add to Wishlist';
+    }
+    function handleFavourite() {
+      if (!_currentProduct) return;
+      if (typeof toggleFavourite === 'function') toggleFavourite(_currentProduct);
+      updateFavBtn();
+      if (typeof refreshFavBadge === 'function') refreshFavBadge();
+    }
+  </script>
 </body>
 </html>
