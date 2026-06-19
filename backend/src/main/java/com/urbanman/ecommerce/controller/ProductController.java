@@ -4,6 +4,7 @@ import com.urbanman.ecommerce.model.Product;
 import com.urbanman.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable Long id) {
+    public ResponseEntity<Product> getProduct(@PathVariable @NonNull Long id) {
         Product p = productService.getProductById(id);
         if (p == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(p);
@@ -31,12 +32,12 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(@RequestBody @NonNull Product product) {
         return ResponseEntity.ok(productService.saveProduct(product));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProduct(@PathVariable @NonNull Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Product deleted");
     }

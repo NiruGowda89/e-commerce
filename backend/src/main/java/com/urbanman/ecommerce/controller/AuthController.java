@@ -4,7 +4,6 @@ import com.urbanman.ecommerce.model.User;
 import com.urbanman.ecommerce.repository.UserRepository;
 import com.urbanman.ecommerce.config.JwtUtil;
 import com.urbanman.ecommerce.service.EmailService;
-import com.urbanman.ecommerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,21 +11,23 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://e-commerce-1-ariz.onrender.com")
+@CrossOrigin(origins = {
+        "https://e-commerce-1-ariz.onrender.com",
+        "https://e-commerce-two-rouge-62.vercel.app"
+})
 public class AuthController {
 
-    private final UserService userService;
     private final UserRepository userRepo;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AuthController(UserService userService, UserRepository userRepo, EmailService emailService, JwtUtil jwtUtil) {
-        this.userService = userService;
+    public AuthController(UserRepository userRepo, EmailService emailService, JwtUtil jwtUtil) {
         this.userRepo = userRepo;
         this.emailService = emailService;
         this.jwtUtil = jwtUtil;
@@ -73,11 +74,14 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
+        if (email == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
         return userRepo.findByEmail(email).map(user -> {
             String tempPass = "Reset@" + (int)(1000 + Math.random() * 9000);
             user.setPassword(passwordEncoder.encode(tempPass));
             userRepo.save(user);
-            emailService.sendPasswordReset(email, user.getName(), tempPass);
+            emailService.sendPasswordReset(Objects.requireNonNull(email), user.getName() != null ? user.getName() : "Customer", tempPass);
             return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
         }).orElse(ResponseEntity.badRequest().body(Map.of("error", "No account found with this email")));
     }

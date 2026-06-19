@@ -4,6 +4,7 @@ import com.urbanman.ecommerce.model.Coupon;
 import com.urbanman.ecommerce.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public class CouponController {
 
     // Admin: delete coupon
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable @NonNull Long id) {
         couponRepo.deleteById(id);
         return ResponseEntity.ok("Coupon deleted");
     }

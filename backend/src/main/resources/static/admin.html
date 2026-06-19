@@ -2,123 +2,474 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Panel - Karunada collection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Dashboard — Karunada Collections</title>
+  <meta name="description" content="Admin control panel for Karunada Collections — store management.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #080f19;
+      --surface:   #0f172a;
+      --surface2:  #1e293b;
+      --border:    rgba(59,130,246,.25);
+      --primary:   #3b82f6;
+      --primary-lt:#60a5fa;
+      --gold:      #fbbf24;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --blue:      #3b82f6;
+      --text:      #f3f4f6;
+      --muted:     #9ca3af;
+      --sidebar-w: 260px;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-w);
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 100;
+      transition: transform .3s ease;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo .shield { font-size: 1.4rem; margin-right: 8px; }
+    .sidebar-logo h1 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 0; line-height: 1.2; }
+    .sidebar-logo span { font-size: .72rem; color: var(--primary-lt); font-weight: 500; letter-spacing: .5px; text-transform: uppercase; }
+
+    .sidebar-user {
+      display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+      border-bottom: 1px solid var(--border); background: rgba(59,130,246,.08);
+    }
+    .user-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--green));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    }
+    .user-info { min-width: 0; }
+    .user-info .name { font-size: .82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info .badge-admin {
+      display: inline-block; font-size: .62rem; font-weight: 700;
+      background: linear-gradient(90deg,var(--primary),var(--green));
+      color: #fff; padding: 1px 7px; border-radius: 20px; letter-spacing: .4px;
+    }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .nav-section { padding: 10px 20px 4px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .nav-link-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; font-size: .84rem; color: var(--muted);
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+      transition: all .2s; border-left: 3px solid transparent;
+    }
+    .nav-link-item:hover { color: var(--text); background: rgba(59,130,246,.1); }
+    .nav-link-item.active { color: var(--primary-lt); background: rgba(59,130,246,.15); border-left-color: var(--primary); font-weight: 600; }
+    .nav-link-item .icon { width: 20px; text-align: center; font-size: 1rem; }
+
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .btn-logout {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 9px 14px; border-radius: 8px; border: 1px solid rgba(239,68,68,.3);
+      background: rgba(239,68,68,.08); color: #ef4444; font-size: .82rem;
+      font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,.2); }
+
+    /* ── Main ─────────────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w); min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(8,15,25,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 28px;
+    }
+    .topbar-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .topbar-title span { color: var(--primary-lt); }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .badge-online { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--green); }
+    .badge-online::before { content:''; width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    .badge-offline { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--red); }
+    .badge-offline::before { content:''; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+    .page-content { flex: 1; padding: 28px; }
+
+    /* ── Section pages ─────────────────────────────────────────── */
+    .admin-section { display: none; }
+    .admin-section.active { display: block; animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:none;} }
+
+    .section-head { margin-bottom: 24px; }
+    .section-head h2 { font-size: 1.4rem; font-weight: 700; }
+    .section-head p { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+
+    /* ── KPI Cards ─────────────────────────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .kpi-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; position: relative; overflow: hidden; transition: transform .2s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); }
+    .kpi-card::before {
+      content:''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-card.blue::before   { background: linear-gradient(90deg,var(--primary),var(--primary-lt)); }
+    .kpi-card.gold::before   { background: linear-gradient(90deg,var(--gold),#fbbf24); }
+    .kpi-card.green::before  { background: linear-gradient(90deg,var(--green),#34d399); }
+    .kpi-card.red::before    { background: linear-gradient(90deg,var(--red),#f87171); }
+    .kpi-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .kpi-icon  { position: absolute; right: 16px; top: 18px; font-size: 1.6rem; opacity: .25; }
+
+    /* ── Charts Row ─────────────────────────────────────────────── */
+    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px;
+    }
+    .chart-card h5 { font-size: .88rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    .sa-table-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+    .sa-table-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .sa-table-head h5 { font-size: .9rem; font-weight: 600; margin: 0; }
+    .sa-table { width: 100%; border-collapse: collapse; }
+    .sa-table th {
+      padding: 11px 16px; text-align: left; font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--muted); font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .sa-table td {
+      padding: 13px 16px; font-size: .83rem; border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .sa-table tr:last-child td { border-bottom: none; }
+    .sa-table tr:hover td { background: rgba(59,130,246,.06); }
+
+    /* ── Badges ──────────────────────────────────────────────────── */
+    .badge-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; }
+    .badge-status.active   { background: rgba(16,185,129,.2); color: #34d399; }
+    .badge-status.inactive { background: rgba(239,68,68,.15);  color: #f87171; }
+    .badge-order { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; }
+    .badge-order.Pending   { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .badge-order.Confirmed { background: rgba(59,130,246,.2); color: #60a5fa; }
+    .badge-order.Shipped   { background: rgba(124,58,237,.2); color: #a78bfa; }
+    .badge-order.Delivered { background: rgba(16,185,129,.2); color: #34d399; }
+    .badge-order.Cancelled { background: rgba(239,68,68,.15); color: #f87171; }
+
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn-sa {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px; border: none;
+      font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-sa:hover { text-decoration: none; }
+    .btn-sa.primary { background: var(--primary); color: #fff; }
+    .btn-sa.primary:hover { background: var(--primary-lt); }
+    .btn-sa.danger  { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+    .btn-sa.danger:hover  { background: rgba(239,68,68,.3); }
+    .btn-sa.success { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+    .btn-sa.success:hover { background: rgba(16,185,129,.3); }
+    .btn-sa.sm { padding: 5px 10px; font-size: .73rem; }
+
+    /* ── Form ───────────────────────────────────────────────────── */
+    .sa-form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; margin-bottom: 24px;
+    }
+    .sa-form-card h5 { font-size: .9rem; font-weight: 600; margin-bottom: 18px; }
+    .form-group label { font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+    .sa-input {
+      width: 100%; padding: 9px 14px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: .83rem; outline: none; transition: border .2s;
+    }
+    .sa-input:focus { border-color: var(--primary); }
+    .sa-input option { background: var(--surface2); }
+
+    /* ── Search / Filter bar ─────────────────────────────────────── */
+    .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-bar .sa-input { max-width: 260px; }
+
+    /* ── Toast ───────────────────────────────────────────────────── */
+    #saToast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 20px; font-size: .83rem; font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,.4); transform: translateY(80px);
+      opacity: 0; transition: all .35s ease; max-width: 320px;
+    }
+    #saToast.show { transform: none; opacity: 1; }
+    #saToast.success { border-left: 4px solid var(--green); }
+    #saToast.error   { border-left: 4px solid var(--red);   }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media(max-width:900px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: none; }
+      #main { margin-left: 0; }
+      .charts-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    }
+
+    /* ── Hamburger ───────────────────────────────────────────────── */
+    #menuToggle {
+      display: none; background: none; border: none; color: var(--text);
+      font-size: 1.4rem; cursor: pointer;
+    }
+    @media(max-width:900px) { #menuToggle { display: block; } }
+
+    /* ── Loading spinner ──────────────────────────────────────────── */
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.2); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-row td { text-align: center; padding: 32px; color: var(--muted); }
+  </style>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="index.html">Karunada collections</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">🏠 Store</a></li>
-        <li class="nav-item"><a class="nav-link" href="delivery.html">🚚 Delivery</a></li>
-      </ul>
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item active"><a class="nav-link" href="admin.html">⚙️ Admin</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="adminUserDrop"
-             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            🔐 Admin
-          </a>
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="adminUserDrop">
-            <span class="dropdown-item-text text-muted small" id="adminNameDisplay">Admin</span>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item text-danger" href="#" onclick="logoutAdmin()">Logout</a>
-          </div>
-        </li>
-      </ul>
+<!-- ── Sidebar ───────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;">
+      <span class="shield">🛡️</span>
+      <div>
+        <h1>Karunada</h1>
+        <span>Admin Dashboard</span>
+      </div>
     </div>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="admAvatar">AD</div>
+    <div class="user-info">
+      <div class="name" id="adminNameDisplay">Store Admin</div>
+      <span class="badge-admin">ADMIN</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <button class="nav-link-item active" data-section="dashboard">
+      <span class="icon">📊</span> Dashboard & Reports
+    </button>
+
+    <div class="nav-section">Inventory</div>
+    <button class="nav-link-item" data-section="products">
+      <span class="icon">🛍️</span> Manage Products
+    </button>
+    <button class="nav-link-item" data-section="coupons">
+      <span class="icon">🎟️</span> Coupon Codes
+    </button>
+
+    <div class="nav-section">Sales Management</div>
+    <button class="nav-link-item" data-section="orders-all">
+      <span class="icon">📦</span> All Orders
+    </button>
+    <button class="nav-link-item" data-section="orders-pending">
+      <span class="icon">⏳</span> Pending Orders
+    </button>
+    <button class="nav-link-item" data-section="orders-delivered">
+      <span class="icon">✅</span> Delivered Orders
+    </button>
   </nav>
 
-  <div class="container mt-4 mb-5">
-    <h2>Admin Dashboard</h2>
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="logoutAdmin()">
+      <span class="icon">🚪</span> Logout Session
+    </button>
+  </div>
+</aside>
 
-    <ul class="nav nav-tabs" id="adminTabs">
-      <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#products">Products</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#orders">Orders</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#coupons">Coupons</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#reports">Reports</a>
-      </li>
-    </ul>
+<!-- ── Main Content Area ──────────────────────────────────────── -->
+<div id="main">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button id="menuToggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title">🛡️ Admin Portal — <span id="topbarSection">Dashboard & Reports</span></div>
+    </div>
+    <div class="topbar-actions">
+      <div id="backendStatus"><span class="badge-online">Backend Online</span></div>
+      <a href="index.html" class="btn-sa primary sm">🏠 View Store</a>
+    </div>
+  </header>
 
-    <div class="tab-content mt-3">
+  <!-- Page Content Scroll Area -->
+  <div class="page-content">
 
-      <!-- Products Tab -->
-      <div id="products" class="tab-pane fade show active">
-        <h4>Add New Product</h4>
-        <form id="addProductForm" class="mb-4">
+    <!-- ════════ SECTION: DASHBOARD / REPORTS ════════ -->
+    <section id="sec-dashboard" class="admin-section active">
+      <div class="section-head">
+        <h2>📊 Performance Analytics</h2>
+        <p>Real-time order volumes, inventory levels, and financial summaries.</p>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-value" id="rptTotalOrders">0</div>
+          <span class="kpi-icon">📦</span>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-value" id="rptRevenue">₹0</div>
+          <span class="kpi-icon">💰</span>
+        </div>
+        <div class="kpi-card gold">
+          <div class="kpi-label">Active Pending</div>
+          <div class="kpi-value" id="rptPending">0</div>
+          <span class="kpi-icon">⏳</span>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Catalog Products</div>
+          <div class="kpi-value" id="rptProducts">0</div>
+          <span class="kpi-icon">🏷️</span>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <!-- Sales Performance -->
+        <div class="chart-card">
+          <h5>📈 Revenue Split by Order Status</h5>
+          <div style="position:relative;height:240px;">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <!-- Status Breakdown -->
+        <div class="chart-card">
+          <h5>📊 Orders Breakdown</h5>
+          <div style="position:relative;height:240px;">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:20px;" class="charts-row">
+        <!-- Recent Orders -->
+        <div class="sa-table-card">
+          <div class="sa-table-head">
+            <h5>📦 Recent Sales Activity</h5>
+          </div>
+          <table class="sa-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Placed At</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Top Sold Products -->
+        <div class="chart-card">
+          <h5>🏆 Best Selling Products (Quantity Sold)</h5>
+          <div id="topProductsChart" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ SECTION: PRODUCTS ════════ -->
+    <section id="sec-products" class="admin-section">
+      <div class="section-head">
+        <h2>🛍️ Products & Inventory</h2>
+        <p>Add new products to the catalog or manage existing stock listings.</p>
+      </div>
+
+      <!-- Add Product Form -->
+      <div class="sa-form-card">
+        <h5>Add New Apparel Product</h5>
+        <form id="addProductForm">
           <div class="form-row">
             <div class="form-group col-md-6">
               <label>Product Name *</label>
-              <input type="text" id="productName" class="form-control" required>
+              <input type="text" id="productName" class="sa-input" placeholder="e.g. Classic Slim Shirt" required>
             </div>
             <div class="form-group col-md-6">
-              <label>Category</label>
-              <select id="category" class="form-control">
-                <option>Shirts</option>
-                <option>T-Shirts</option>
-                <option>Jackets</option>
-                <option>Jeans</option>
-                <option>Formal Wear</option>
-                <option>Sports Wear</option>
-                <option>Shorts</option>
-                <option>Accessories</option>
-                <option>New Collection</option>
+              <label>Category *</label>
+              <select id="category" class="sa-input">
+                <option value="Shirts">Shirts</option>
+                <option value="T-Shirts">T-Shirts</option>
+                <option value="Jackets">Jackets</option>
+                <option value="Jeans">Jeans</option>
+                <option value="Formal Wear">Formal Wear</option>
+                <option value="Sports Wear">Sports Wear</option>
+                <option value="Shorts">Shorts</option>
+                <option value="Accessories">Accessories</option>
+                <option value="New Collection">New Collection</option>
               </select>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row" style="margin-top:10px;">
             <div class="form-group col-md-4">
               <label>Brand</label>
-              <input type="text" id="brand" class="form-control">
+              <input type="text" id="brand" class="sa-input" value="Karunada">
             </div>
             <div class="form-group col-md-4">
-              <label>Price *</label>
-              <input type="number" id="price" class="form-control" required>
+              <label>Price (₹) *</label>
+              <input type="number" id="price" class="sa-input" placeholder="e.g. 1499" required>
             </div>
             <div class="form-group col-md-4">
-              <label>Stock *</label>
-              <input type="number" id="stock" class="form-control" required>
+              <label>Stock Qty *</label>
+              <input type="number" id="stock" class="sa-input" placeholder="e.g. 50" required>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row" style="margin-top:10px;">
             <div class="form-group col-md-4">
-              <label>Size</label>
-              <input type="text" id="size" class="form-control" placeholder="S, M, L, XL">
+              <label>Sizes (comma-separated)</label>
+              <input type="text" id="size" class="sa-input" placeholder="e.g. S,M,L,XL">
             </div>
             <div class="form-group col-md-4">
               <label>Color</label>
-              <input type="text" id="color" class="form-control">
+              <input type="text" id="color" class="sa-input" placeholder="e.g. Navy Blue">
             </div>
             <div class="form-group col-md-4">
               <label>Image URL</label>
-              <input type="text" id="imageUrl" class="form-control" placeholder="images/shirt.jpg">
+              <input type="text" id="imageUrl" class="sa-input" placeholder="images/shirt.jpg">
             </div>
           </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="description" class="form-control" rows="2"></textarea>
+          <div class="form-group" style="margin-top:12px;">
+            <label>Product Description</label>
+            <textarea id="description" class="sa-input" rows="3" placeholder="Describe materials, fits, and features..."></textarea>
           </div>
-          <button type="submit" class="btn btn-success">Add Product</button>
+          <button type="submit" class="btn-sa primary">➕ Add Product</button>
         </form>
+      </div>
 
-        <h5>Existing Products</h5>
-        <table class="table table-bordered table-hover">
-          <thead class="thead-dark">
+      <!-- Existing Products list -->
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Existing Catalog <span id="productCount" style="color:var(--primary-lt);">()</span></h5>
+          <div class="filter-bar" style="margin-bottom:0;">
+            <input type="text" id="productSearch" class="sa-input" placeholder="🔍 Search products..." onkeyup="filterProductsTable()">
+          </div>
+        </div>
+        <table class="sa-table">
+          <thead>
             <tr>
               <th>ID</th>
               <th>Name</th>
@@ -130,125 +481,170 @@
           <tbody id="productTable"></tbody>
         </table>
       </div>
+    </section>
 
-      <!-- Orders Tab -->
-      <div id="orders" class="tab-pane fade">
-        <h4>Manage Orders</h4>
-        <table class="table table-bordered table-hover">
-          <thead class="thead-dark">
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Status / Total</th>
-              <th>Update Status</th>
-            </tr>
-          </thead>
-          <tbody id="orderTable"></tbody>
-        </table>
+    <!-- ════════ SECTION: COUPONS ════════ -->
+    <section id="sec-coupons" class="admin-section">
+      <div class="section-head">
+        <h2>🎟️ Promotional Coupon Codes</h2>
+        <p>Offer customers discounts with custom percent or flat discount coupon campaigns.</p>
       </div>
 
-      <!-- Coupons Tab -->
-      <div id="coupons" class="tab-pane fade">
-        <h4>🎟️ Coupon Codes</h4>
-
-        <!-- Add Coupon Form -->
-        <form id="addCouponForm" class="card p-3 mb-4">
+      <!-- Add Coupon Form -->
+      <div class="sa-form-card">
+        <h5>Create Promotional Coupon</h5>
+        <form id="addCouponForm">
           <div class="form-row">
             <div class="form-group col-md-3">
               <label>Coupon Code *</label>
-              <input type="text" id="couponCode" class="form-control" placeholder="e.g. SAVE10" required>
+              <input type="text" id="couponCode" class="sa-input" placeholder="e.g. SAVE15" required>
             </div>
             <div class="form-group col-md-3">
               <label>Discount %</label>
-              <input type="number" id="couponPercent" class="form-control" placeholder="e.g. 10">
+              <input type="number" id="couponPercent" class="sa-input" placeholder="e.g. 15">
             </div>
             <div class="form-group col-md-3">
-              <label>Flat Discount (₹)</label>
-              <input type="number" id="couponAmount" class="form-control" placeholder="e.g. 100">
+              <label>Flat Amount (₹)</label>
+              <input type="number" id="couponAmount" class="sa-input" placeholder="e.g. 200">
             </div>
             <div class="form-group col-md-3">
               <label>Min Order (₹)</label>
-              <input type="number" id="couponMinOrder" class="form-control" placeholder="e.g. 500">
+              <input type="number" id="couponMinOrder" class="sa-input" placeholder="e.g. 999">
             </div>
           </div>
-          <button type="submit" class="btn btn-success">Add Coupon</button>
-          <small class="text-muted ml-3">Fill either Discount % or Flat Discount — not both</small>
+          <div class="modal-actions" style="justify-content:flex-start;margin-top:12px;">
+            <button type="submit" class="btn-sa primary">🎟️ Create Coupon</button>
+            <span style="font-size:.76rem;color:var(--muted);margin-left:14px;align-self:center;">* Fill either Percent or Flat Amount — not both</span>
+          </div>
         </form>
+      </div>
 
-        <!-- Coupons Table -->
-        <table class="table table-bordered">
-          <thead class="thead-dark">
-            <tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Status</th><th>Action</th></tr>
+      <!-- Coupons List -->
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Active Discount Coupons</h5>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Discount</th>
+              <th>Min Order</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
           </thead>
           <tbody id="couponTable"></tbody>
         </table>
       </div>
+    </section>
 
-      <!-- Reports Tab -->
-      <div id="reports" class="tab-pane fade">
-        <h4>📊 Sales Reports</h4>
-        <div class="row mb-4" id="reportCards">
-          <div class="col-md-3 mb-3">
-            <div class="card text-white bg-primary">
-              <div class="card-body text-center">
-                <h2 id="rptTotalOrders">0</h2>
-                <p class="mb-0">Total Orders</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card text-white bg-success">
-              <div class="card-body text-center">
-                <h2 id="rptRevenue">₹0</h2>
-                <p class="mb-0">Total Revenue</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card text-white bg-warning">
-              <div class="card-body text-center">
-                <h2 id="rptPending">0</h2>
-                <p class="mb-0">Pending Orders</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <div class="card text-white bg-info">
-              <div class="card-body text-center">
-                <h2 id="rptProducts">0</h2>
-                <p class="mb-0">Total Products</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <h5>📦 Recent Orders</h5>
-        <table class="table table-bordered table-sm">
-          <thead class="thead-dark">
-            <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr>
-          </thead>
-          <tbody id="recentOrdersTable"></tbody>
-        </table>
-
-        <h5 class="mt-4">🏆 Top Products by Orders</h5>
-        <div id="topProductsChart"></div>
+    <!-- ════════ SECTION: ALL ORDERS ════════ -->
+    <section id="sec-orders-all" class="admin-section">
+      <div class="section-head">
+        <h2>📦 Order Registry (All Orders)</h2>
+        <p>Monitor all placed store orders, trace delivery status, and edit order status.</p>
       </div>
 
-    </div>
-  </div>
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>All Orders Registry <span id="allOrdersCount" style="color:var(--primary-lt);">()</span></h5>
+          <div class="filter-bar" style="margin-bottom:0;">
+            <input type="text" id="orderSearchAll" class="sa-input" placeholder="🔍 Search by ID / customer..." onkeyup="filterAllOrdersTable()">
+          </div>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer details</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Order Date</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody id="orderTableAll"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Footer -->
-  <footer class="bg-dark text-white text-center p-3">
-    <p class="mb-0">&copy; 2026 Karunada collections | <a href="index.html" class="text-light">Home</a> | <a href="shop.html" class="text-light">Shop</a></p>
-  </footer>
+    <!-- ════════ SECTION: PENDING ORDERS ════════ -->
+    <section id="sec-orders-pending" class="admin-section">
+      <div class="section-head">
+        <h2>⏳ Active Pending Orders</h2>
+        <p>Fulfill open orders. Includes states: Pending, Confirmed, and Shipped.</p>
+      </div>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/products.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script>requireAdmin();</script>
-  <script src="js/admin.js"></script>
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Active Order Queue <span id="pendingOrdersCount" style="color:var(--gold);">()</span></h5>
+          <div class="filter-bar" style="margin-bottom:0;">
+            <input type="text" id="orderSearchPending" class="sa-input" placeholder="🔍 Search pending..." onkeyup="filterPendingOrdersTable()">
+          </div>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer details</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Order Date</th>
+              <th>Update Status</th>
+            </tr>
+          </thead>
+          <tbody id="orderTablePending"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════════ SECTION: DELIVERED ORDERS ════════ -->
+    <section id="sec-orders-delivered" class="admin-section">
+      <div class="section-head">
+        <h2>✅ Delivered Orders History</h2>
+        <p>Complete record of successfully delivered orders.</p>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Delivered Log <span id="deliveredOrdersCount" style="color:var(--green);">()</span></h5>
+          <div class="filter-bar" style="margin-bottom:0;">
+            <input type="text" id="orderSearchDelivered" class="sa-input" placeholder="🔍 Search delivered..." onkeyup="filterDeliveredOrdersTable()">
+          </div>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer details</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Delivered Date</th>
+            </tr>
+          </thead>
+          <tbody id="orderTableDelivered"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div><!-- /.page-content -->
+</div><!-- /#main -->
+
+<!-- ── Toast ─────────────────────────────────────────────────── -->
+<div id="saToast"></div>
+
+<!-- ── Scripts ────────────────────────────────────────────────── -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/products.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>requireAdmin();</script>
+<script src="js/admin.js"></script>
 </body>
 </html>

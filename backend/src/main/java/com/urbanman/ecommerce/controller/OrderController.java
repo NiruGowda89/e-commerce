@@ -5,6 +5,7 @@ import com.urbanman.ecommerce.service.EmailService;
 import com.urbanman.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -20,14 +21,17 @@ public class OrderController {
     public ResponseEntity<Order> placeOrder(@RequestBody Order order) {
         Order saved = orderService.placeOrder(order);
         // Send confirmation email
-        if (saved.getEmail() != null && !saved.getEmail().isEmpty()) {
+        String email = saved.getEmail();
+        String customerName = saved.getCustomerName();
+        if (email != null && !email.isEmpty()) {
+            String name = customerName != null ? customerName : "Customer";
             String otp = String.valueOf((int)(100000 + Math.random() * 900000));
             emailService.sendOrderConfirmation(
-                saved.getEmail(),
-                saved.getCustomerName(),
-                "ORD-" + saved.getOrderId(),
+                email != null ? email : "",
+                name != null ? name : "",
+                "ORD-" + (saved.getOrderId() != null ? saved.getOrderId() : ""),
                 saved.getTotalAmount() != null ? saved.getTotalAmount() : 0,
-                otp
+                otp != null ? otp : ""
             );
         }
         return ResponseEntity.ok(saved);
@@ -44,7 +48,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long orderId,
+    public ResponseEntity<Order> updateOrderStatus(@PathVariable @NonNull Long orderId,
                                                    @RequestParam String status) {
         Order updated = orderService.updateOrderStatus(orderId, status);
         return ResponseEntity.ok(updated);

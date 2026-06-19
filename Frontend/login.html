@@ -395,8 +395,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (typeof getCurrentUser === 'function' && getCurrentUser()) {
       var u = getCurrentUser();
-      window.location.href = u.role === 'ADMIN' ? 'admin.html'
-        : (new URLSearchParams(window.location.search).get('redirect') || 'index.html');
+      if (u.role === 'SUPER_ADMIN')      window.location.href = 'super-admin.html';
+      else if (u.role === 'ADMIN')       window.location.href = 'admin.html';
+      else window.location.href = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
     }
   });
 
@@ -510,8 +511,10 @@
 
       if (!result.ok) { showErr(result.msg || 'Invalid email or password.'); return; }
 
-      /* Route by role — admin goes to dashboard, user goes to home/redirect */
-      if (result.user.role === 'ADMIN') {
+      /* Route by role */
+      if (result.user.role === 'SUPER_ADMIN') {
+        window.location.href = 'super-admin.html';
+      } else if (result.user.role === 'ADMIN') {
         window.location.href = 'admin.html';
       } else {
         window.location.href =

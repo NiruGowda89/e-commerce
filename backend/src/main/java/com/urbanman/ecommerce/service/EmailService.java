@@ -1,6 +1,7 @@
 package com.urbanman.ecommerce.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,8 @@ public class EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
-    public void sendOrderConfirmation(String toEmail, String customerName,
-                                       String orderId, double total, String otp) {
+    public void sendOrderConfirmation(@NonNull String toEmail, @NonNull String customerName,
+                                       @NonNull String orderId, double total, @NonNull String otp) {
         if (mailSender == null) {
             System.out.println("Mail not configured — skipping email for order " + orderId);
             return;
@@ -30,7 +31,7 @@ public class EmailService {
         }
     }
 
-    public void sendPasswordReset(String toEmail, String customerName, String tempPassword) {
+    public void sendPasswordReset(@NonNull String toEmail, @NonNull String customerName, @NonNull String tempPassword) {
         if (mailSender == null) return;
         try {
             MimeMessage msg = mailSender.createMimeMessage();
@@ -44,7 +45,7 @@ public class EmailService {
         }
     }
 
-    private String buildOrderEmail(String name, String orderId, double total, String otp) {
+    private @NonNull String buildOrderEmail(String name, String orderId, double total, String otp) {
         return "<div style='font-family:Arial,sans-serif;max-width:600px;margin:auto;'>" +
             "<div style='background:#1a1a2e;padding:20px;text-align:center;'>" +
             "<h1 style='color:#ffc107;margin:0;'>🛍️ Karunada Collection</h1></div>" +
@@ -67,7 +68,7 @@ public class EmailService {
             "© 2026 Karunada Collection</div></div>";
     }
 
-    private String buildResetEmail(String name, String tempPassword) {
+    private @NonNull String buildResetEmail(String name, String tempPassword) {
         return "<div style='font-family:Arial,sans-serif;max-width:600px;margin:auto;'>" +
             "<div style='background:#1a1a2e;padding:20px;text-align:center;'>" +
             "<h1 style='color:#ffc107;margin:0;'>🛍️ Karunada Collection</h1></div>" +

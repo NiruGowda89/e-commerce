@@ -5,6 +5,7 @@ import com.urbanman.ecommerce.repository.ProductRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 
 @Configuration
 public class DataSeeder {
@@ -21,7 +22,7 @@ public class DataSeeder {
         };
     }
 
-    private Product make(String name, String cat, String brand,
+    private @NonNull Product make(String name, String cat, String brand,
                          Double price, String size, String color,
                          Integer stock, String img, String desc) {
         Product p = new Product();

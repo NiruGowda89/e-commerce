@@ -1,5 +1,18 @@
+// Load Theme preference immediately to avoid flash
+(function() {
+  const theme = localStorage.getItem('karunada_app_theme') || 'turquoise';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.className = (document.body.className || '') + ' theme-' + theme;
+    });
+  } else {
+    document.body.className = (document.body.className || '') + ' theme-' + theme;
+  }
+})();
+
 if (typeof API_URL === "undefined") {
-  window.API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' || window.location.protocol === 'file:';
+  window.API_URL = localStorage.getItem('karunada_api_base') || (isLocal ? "http://localhost:8080/api" : "https://e-commerce-1-ariz.onrender.com/api");
 }
 var API_URL = window.API_URL;
 
@@ -12,20 +25,15 @@ var ADMIN_AUTH_KEY = 'urbanManAdmin';
 
 function getAdmin() {
   const user = getCurrentUser();
-  if (user && user.role === 'ADMIN') {
+  if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
     return user;
   }
   return null;
 }
 
-function logoutAdmin() {
-  logoutUser();
-}
-
-function requireAdmin() {
-  if (!getAdmin()) {
-    window.location.href = 'login.html';
-  }
+function getSuperAdmin() {
+  const user = getCurrentUser();
+  return (user && user.role === 'SUPER_ADMIN') ? user : null;
 }
 
 // ─── User Auth ────────────────────────────────────────────────────────────────
@@ -102,15 +110,22 @@ function refreshAuthNav() {
 
   if (user) {
     let menuHtml = '';
-    if (user.role === 'ADMIN') {
+    if (user.role === 'SUPER_ADMIN') {
+        menuHtml =
+            '<a class="dropdown-item" href="super-admin.html">👑 Super Admin Portal</a>' +
+            '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
+    } else if (user.role === 'ADMIN') {
         menuHtml = '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
     } else {
-        menuHtml = '<a class="dropdown-item" href="orders.html">📦 My Orders</a>';
+        menuHtml =
+            '<a class="dropdown-item" href="account.html#profile">👤 My Account</a>' +
+            '<a class="dropdown-item" href="account.html#orders">📦 My Orders</a>' +
+            '<a class="dropdown-item" href="account.html#wishlist">❤️ Wishlist</a>';
     }
-    
+
     authEl.className = 'nav-item dropdown';
     authEl.innerHTML =
-        '<a class="nav-link dropdown-toggle" href="#" id="userDropdown" ' +
+        '<a class="nav-link dropdown-toggle" href="account.html" id="userDropdown" ' +
            'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
           '👤 ' + user.name.split(' ')[0] +
         '</a>' +

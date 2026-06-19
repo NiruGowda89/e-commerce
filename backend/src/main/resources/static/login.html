@@ -2,414 +2,545 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0c29">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Login – Karunada Collection</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
+    html, body {
+      height: 100%;
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background: linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #1a1a2e 100%);
+      overflow-x: hidden;
+    }
+
+    /* ── Shell ── */
+    .login-shell {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
     }
 
-    .auth-wrapper {
+    /* ── Header ── */
+    .login-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: max(env(safe-area-inset-top), 14px) 20px 14px;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .login-header-brand {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffc107;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+    .login-header-brand:hover { color: #ffc107; text-decoration: none; }
+    .header-links { display: flex; gap: 10px; }
+    .header-links a {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .header-links a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ── Scroll area ── */
+    .login-scroll {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 16px;
+      padding: 32px 16px max(env(safe-area-inset-bottom), 32px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .auth-box {
+    /* ── Card ── */
+    .auth-card {
       width: 100%;
-      max-width: 460px;
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 20px;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     }
 
-    /* ── Tabs ── */
-    .auth-tabs {
-      display: flex;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    /* ── Card top accent bar ── */
+    .auth-card__bar {
+      height: 5px;
+      background: linear-gradient(90deg, #ffc107, #ff9800, #ffc107);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite linear;
     }
-    .auth-tab-btn {
-      flex: 1;
-      padding: 16px;
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.5);
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
     }
-    .auth-tab-btn.active { color: #ffc107; }
-    .auth-tab-btn.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 20%; right: 20%;
-      height: 3px;
-      background: #ffc107;
-      border-radius: 3px 3px 0 0;
+
+    /* ── Card body ── */
+    .auth-card__body { padding: 36px 32px 28px; }
+
+    /* Logo + title */
+    .auth-logo {
+      width: 60px; height: 60px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #302b63, #0f3460);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 18px;
+      box-shadow: 0 6px 20px rgba(48,43,99,0.35);
     }
-    /* Admin tab accent */
-    .auth-tab-btn.admin-tab.active { color: #e74c3c; }
-    .auth-tab-btn.admin-tab.active::after { background: #e74c3c; }
-
-    /* ── Form Body ── */
-    .auth-body { padding: 32px; }
-
-    .auth-title { color: #fff; font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-    .auth-subtitle { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 28px; }
-
-    .field-group { margin-bottom: 18px; }
-    .field-group label {
-      display: block;
-      color: rgba(255,255,255,0.7);
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .auth-title {
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 4px;
     }
-    .field-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px;
-      color: #fff;
-      font-size: 0.95rem;
-      transition: border 0.2s, background 0.2s;
-      outline: none;
+    .auth-sub {
+      text-align: center;
+      font-size: 0.83rem;
+      color: #6b7280;
+      margin-bottom: 28px;
     }
-    .field-group input::placeholder { color: rgba(255,255,255,0.3); }
-    .field-group input:focus { border-color: #ffc107; background: rgba(255,255,255,0.12); }
-    #panelAdmin .field-group input:focus { border-color: #e74c3c; }
 
-    /* ── Buttons ── */
-    .btn-auth {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-top: 8px;
-    }
-    .btn-auth:hover  { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-    .btn-auth:active { transform: translateY(0); }
-
-    .btn-login  { background: linear-gradient(135deg, #ffc107, #ff9800); color: #1a1a2e; }
-    .btn-signup { background: linear-gradient(135deg, #00b09b, #96c93d); color: #fff; }
-    .btn-admin  { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff; }
-
-    /* ── Messages ── */
-    .msg-box {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
+    /* ── Error / success msg ── */
+    .auth-msg {
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 0.84rem;
+      font-weight: 500;
       margin-bottom: 16px;
       display: none;
     }
-    .msg-error   { background: rgba(220,53,69,0.2);  border: 1px solid rgba(220,53,69,0.5);  color: #ff6b6b; }
-    .msg-success { background: rgba(40,167,69,0.2);  border: 1px solid rgba(40,167,69,0.5);  color: #69db7c; }
+    .auth-msg--error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+    .auth-msg--success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; }
 
-    .switch-link { text-align: center; margin-top: 20px; color: rgba(255,255,255,0.4); font-size: 0.88rem; }
-    .switch-link a { color: #ffc107; text-decoration: none; font-weight: 600; }
-    .switch-link a:hover { text-decoration: underline; }
-
-    /* Admin hint */
-    .hint-box {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin-top: 16px;
-      color: rgba(255,255,255,0.35);
-      font-size: 0.78rem;
-      text-align: center;
+    /* ── Fields ── */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
     }
-    .hint-box code { background: rgba(255,255,255,0.1); padding: 1px 6px; border-radius: 4px; color: rgba(255,200,100,0.8); }
+    .field input {
+      width: 100%;
+      padding: 13px 16px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 11px;
+      font-size: 0.95rem;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input::placeholder { color: #9ca3af; }
+    .field input:focus {
+      border-color: #302b63;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(48,43,99,0.1);
+    }
 
-    /* Admin badge on tab */
-    .shield-icon { font-size: 0.85rem; margin-right: 4px; }
+    /* ── Password wrapper with show/hide ── */
+    .field-pw { position: relative; }
+    .field-pw input { padding-right: 46px; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 1rem; color: #9ca3af;
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pw-toggle:hover { color: #374151; }
 
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* ── Primary button ── */
+    .btn-primary-auth {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #302b63, #0f3460);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      margin-top: 8px;
+      box-shadow: 0 4px 18px rgba(48,43,99,0.35);
+      transition: transform 0.15s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary-auth:hover  { box-shadow: 0 6px 24px rgba(48,43,99,0.45); transform: translateY(-1px); }
+    .btn-primary-auth:active { transform: scale(0.98); }
+    .btn-primary-auth:disabled { opacity: 0.65; transform: none; cursor: not-allowed; }
 
-    .bottom-bar { text-align: center; padding: 16px; color: rgba(255,255,255,0.3); font-size: 0.8rem; }
+    /* ── Forgot link ── */
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 0.78rem;
+      color: #302b63;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+    .forgot-link:hover { text-decoration: underline; color: #302b63; }
+
+    /* ── Divider ── */
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+      color: #d1d5db; font-size: 0.78rem;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: #e5e7eb;
+    }
+
+    /* ── Register toggle ── */
+    .auth-toggle {
+      text-align: center;
+      font-size: 0.84rem;
+      color: #6b7280;
+      margin-top: 16px;
+    }
+    .auth-toggle a {
+      color: #302b63;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .auth-toggle a:hover { text-decoration: underline; }
+
+    /* Register fields — hidden by default */
+    .register-fields { display: none; }
+
+    /* ── Support footer ── */
+    .auth-card__footer {
+      text-align: center;
+      padding: 14px 20px 18px;
+      background: #f9fafb;
+      border-top: 1px solid #f0f0f0;
+    }
+    .auth-card__footer a {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .auth-card__footer a:hover { color: #302b63; }
+
+    /* ── Footer text ── */
+    .login-footer {
+      text-align: center;
+      padding: 14px 16px max(env(safe-area-inset-bottom), 14px);
+      color: rgba(255,255,255,0.25);
+      font-size: 0.74rem;
+    }
+
+    /* ── Forgot password screen ── */
+    #forgotScreen { display: none; }
+
+    @media (max-width: 440px) {
+      .auth-card__body { padding: 28px 20px 20px; }
+      .auth-title { font-size: 1.15rem; }
+    }
   </style>
 </head>
 <body>
+<div class="login-shell">
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="index.html">Karunada Collection</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
-        <li class="nav-item"><a class="nav-link" href="new-arrivals.html">New Arrivals</a></li>
-        <li class="nav-item"><a class="nav-link" href="offers.html">Offers</a></li>
-      </ul>
-      <form class="form-inline mx-2" onsubmit="doSearch(event)">
-        <div class="input-group">
-          <input class="form-control form-control-sm" type="search" id="globalSearch"
-                 placeholder="Search products…" style="width:180px;">
-          <div class="input-group-append">
-            <button class="btn btn-outline-light btn-sm" type="submit">🔍</button>
-          </div>
-        </div>
-      </form>
-      <ul class="navbar-nav ml-2">
-        <li class="nav-item">
-          <a class="nav-link" href="cart.html">🛒 <span id="cartCount" class="badge badge-light ml-1"></span></a>
-        </li>
-        <li id="authNav" class="nav-item">
-          <a class="nav-link font-weight-bold" href="login.html" style="color:#ffc107;border:1px solid #ffc107;border-radius:6px;padding:5px 12px;margin-left:4px;">👤 Login</a>
-        </li>
-      </ul>
+  <!-- Header -->
+  <header class="login-header">
+    <a class="login-header-brand" href="index.html">🛍️ Karunada Collection</a>
+    <div class="header-links">
+      <a href="shop.html">Shop</a>
+      <a href="cart.html">🛒 Cart</a>
     </div>
-  </nav>
+  </header>
 
-  <div class="auth-wrapper">
-    <div class="auth-box">
+  <!-- Scroll area -->
+  <div class="login-scroll">
+    <div class="auth-card">
+      <div class="auth-card__bar"></div>
+      <div class="auth-card__body">
 
-      <!-- Tabs -->
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tabLogin"    onclick="switchTab('login')">Login</button>
+        <!-- ── LOGO + TITLE ── -->
+        <div class="auth-logo" id="authLogo">🛍️</div>
+        <div class="auth-title" id="authTitle">Welcome back</div>
+        <div class="auth-sub"   id="authSub">Sign in to your account</div>
+
+        <!-- ── MESSAGE BOX ── -->
+        <div class="auth-msg auth-msg--error"   id="authErr"></div>
+        <div class="auth-msg auth-msg--success" id="authOk"></div>
+
+        <!-- ── MAIN FORM ── -->
+        <form id="mainForm" autocomplete="on">
+
+          <!-- Register-only fields -->
+          <div class="register-fields" id="registerFields">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" id="regName" placeholder="Your full name"
+                     autocomplete="name" autocapitalize="words">
+            </div>
+            <div class="field">
+              <label>Phone Number</label>
+              <input type="tel" id="regPhone" placeholder="10-digit mobile"
+                     inputmode="tel" autocomplete="tel">
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="authEmail" placeholder="you@example.com"
+                   autocomplete="email" inputmode="email" required>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label>Password</label>
+            <div class="field-pw">
+              <input type="password" id="authPassword" placeholder="Enter your password"
+                     autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" id="pwToggle"
+                      onclick="togglePw()" tabindex="-1">👁</button>
+            </div>
+          </div>
+
+          <!-- Confirm password (register only) -->
+          <div class="register-fields" id="confirmFields">
+            <div class="field">
+              <label>Confirm Password</label>
+              <div class="field-pw">
+                <input type="password" id="authConfirm" placeholder="Repeat password"
+                       autocomplete="new-password">
+              </div>
+            </div>
+          </div>
+
+          <!-- Forgot link (login mode only) -->
+          <a href="#" class="forgot-link" id="forgotLink"
+             onclick="showForgot(); return false;"style="color: #007bff; text-decoration: underline; text-align: center;">Forgot password?</a>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-primary-auth" id="submitBtn">
+            Sign In →
+          </button>
+        </form>
+
+        <!-- Toggle login ↔ register -->
+        <div class="auth-toggle" id="authToggle">
+          New here?
+          <a href="#" onclick="setMode('register'); return false;">Create an account</a>
+        </div>
+
+        <!-- ── FORGOT PASSWORD ── -->
+        <div id="forgotScreen">
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="forgotEmail" placeholder="you@example.com" inputmode="email">
+          </div>
+          <button type="button" class="btn-primary-auth" onclick="submitForgot()">
+            Send Reset Link →
+          </button>
+          <div class="auth-toggle" style="margin-top:14px;">
+            <a href="#" onclick="setMode('login'); return false;">← Back to Sign In</a>
+          </div>
+        </div>
+
+      </div><!-- /body -->
+
+      <!-- Support footer -->
+      <div class="auth-card__footer">
+        <a href="tel:9876543210">📞 Need help? 9876543210</a>
       </div>
+    </div><!-- /auth-card -->
+  </div><!-- /login-scroll -->
 
-      <div class="auth-body">
+  <div class="login-footer">&copy; 2026 Karunada Collection. All rights reserved.</div>
 
-        <!-- ── USER LOGIN PANEL ── -->
-        <div class="tab-panel active" id="panelLogin">
-          <div class="auth-title">Welcome back 👋</div>
-          <div class="auth-subtitle">Sign in to your account</div>
+</div><!-- /login-shell -->
 
-          <div class="msg-box msg-error" id="loginErr"></div>
+<script src="js/cart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  /* ── Current mode: 'login' | 'register' ── */
+  var _mode = 'login';
 
-          <form id="loginForm">
-            <div class="field-group">
-              <label for="loginEmail">Email Address</label>
-              <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
-            </div>
-            <div class="field-group">
-              <label for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn-auth btn-login">Sign In →</button>
-          </form>
-
-          <div class="switch-link">
-            New here? <a href="#" onclick="switchTab('register');return false;">Create an account</a>
-            &nbsp;|&nbsp; <a href="#" onclick="switchTab('forgot');return false;">Forgot password?</a>
-          </div>
-        </div>
-
-        <!-- ── FORGOT PASSWORD PANEL ── -->
-        <div class="tab-panel" id="panelForgot">
-          <div class="auth-title">Reset Password 🔑</div>
-          <div class="auth-subtitle">Enter your registered email to reset</div>
-
-          <div class="msg-box msg-error"   id="forgotErr"></div>
-          <div class="msg-box msg-success" id="forgotOk"></div>
-
-          <form id="forgotForm">
-            <div class="field-group">
-              <label for="forgotEmail">Email Address</label>
-              <input type="email" id="forgotEmail" placeholder="you@example.com">
-            </div>
-            <button type="submit" class="btn-auth btn-login">Send Reset Link →</button>
-          </form>
-          <div class="switch-link">
-            <a href="#" onclick="switchTab('login');return false;">← Back to Login</a>
-          </div>
-        </div>
-
-        <!-- ── REGISTER PANEL ── -->
-        <div class="tab-panel" id="panelRegister">
-          <div class="auth-title">Create Account 🎉</div>
-          <div class="auth-subtitle">Join Karunada Collection today</div>
-
-          <div class="msg-box msg-error"   id="regErr"></div>
-          <div class="msg-box msg-success" id="regOk"></div>
-
-          <form id="registerForm">
-            <div class="field-group">
-              <label for="regName">Full Name</label>
-              <input type="text" id="regName" placeholder="Your full name" autocomplete="name">
-            </div>
-            <div class="field-group">
-              <label for="regEmail">Email Address</label>
-              <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
-            </div>
-            <div class="field-group">
-              <label for="regPhone">Phone Number</label>
-              <input type="tel" id="regPhone" placeholder="10-digit mobile number" autocomplete="tel">
-            </div>
-            <div class="field-group">
-              <label for="regPassword">Password</label>
-              <input type="password" id="regPassword" placeholder="Min 6 characters" autocomplete="new-password">
-            </div>
-            <div class="field-group">
-              <label for="regConfirm">Confirm Password</label>
-              <input type="password" id="regConfirm" placeholder="Repeat password" autocomplete="new-password">
-            </div>
-            <button type="submit" class="btn-auth btn-signup">Create Account →</button>
-          </form>
-
-          <div class="switch-link">
-            Already have an account? <a href="#" onclick="switchTab('login');return false;">Sign in</a>
-          </div>
-        </div>
-
-
-      </div>
-    </div>
-  </div>
-
-  <div class="bottom-bar">&copy; 2026 Karunada Collection. All rights reserved.</div>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/products.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/search.js"></script>
-  <script>
-    // Redirect if already logged in
+  /* ── Redirect if already logged in ── */
+  document.addEventListener('DOMContentLoaded', function () {
     if (typeof getCurrentUser === 'function' && getCurrentUser()) {
-      var user = getCurrentUser();
-      if (user.role === 'ADMIN') {
+      var u = getCurrentUser();
+      if (u.role === 'SUPER_ADMIN')      window.location.href = 'super-admin.html';
+      else if (u.role === 'ADMIN')       window.location.href = 'admin.html';
+      else window.location.href = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+    }
+  });
+
+  /* ── Toggle password visibility ── */
+  function togglePw() {
+    var inp = document.getElementById('authPassword');
+    var btn = document.getElementById('pwToggle');
+    if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁';  }
+  }
+
+  /* ── Switch between login and register ── */
+  function setMode(mode) {
+    _mode = mode;
+    var isReg = (mode === 'register');
+
+    /* Show/hide register-only fields */
+    document.querySelectorAll('.register-fields').forEach(function (el) {
+      el.style.display = isReg ? 'block' : 'none';
+    });
+
+    /* Forgot link only visible in login mode */
+    document.getElementById('forgotLink').style.display = isReg ? 'none' : 'block';
+
+    /* Autocomplete hint */
+    document.getElementById('authPassword').autocomplete = isReg ? 'new-password' : 'current-password';
+
+    /* Labels / button */
+    document.getElementById('authTitle').textContent  = isReg ? 'Create Account' : 'Welcome back';
+    document.getElementById('authSub').textContent    = isReg ? 'Join Karunada Collection today' : 'Sign in to your account';
+    document.getElementById('submitBtn').textContent  = isReg ? 'Create Account →' : 'Sign In →';
+    document.getElementById('authLogo').textContent   = isReg ? '🎉' : '🛍️';
+    document.getElementById('authToggle').innerHTML   = isReg
+      ? 'Already have an account? <a href="#" onclick="setMode(\'login\');return false;">Sign in</a>'
+      : 'New here? <a href="#" onclick="setMode(\'register\');return false;">Create an account</a>';
+
+    /* Hide forgot screen, show main form */
+    document.getElementById('forgotScreen').style.display = 'none';
+    document.getElementById('mainForm').style.display     = 'block';
+    document.getElementById('authToggle').style.display   = 'block';
+    document.getElementById('forgotLink').style.display   = isReg ? 'none' : 'block';
+
+    clearMsgs();
+  }
+
+  function showForgot() {
+    document.getElementById('mainForm').style.display     = 'none';
+    document.getElementById('authToggle').style.display   = 'none';
+    document.getElementById('forgotScreen').style.display = 'block';
+    document.getElementById('authTitle').textContent      = 'Reset Password';
+    document.getElementById('authSub').textContent        = 'Enter your registered email';
+    document.getElementById('authLogo').textContent       = '🔑';
+    clearMsgs();
+  }
+
+  /* ── Message helpers ── */
+  function showErr(msg) {
+    var e = document.getElementById('authErr');
+    e.textContent = msg; e.style.display = 'block';
+    document.getElementById('authOk').style.display = 'none';
+  }
+  function showOk(msg) {
+    var e = document.getElementById('authOk');
+    e.textContent = msg; e.style.display = 'block';
+    document.getElementById('authErr').style.display = 'none';
+  }
+  function clearMsgs() {
+    document.getElementById('authErr').style.display = 'none';
+    document.getElementById('authOk').style.display  = 'none';
+  }
+
+  /* ── MAIN FORM SUBMIT ── */
+  document.getElementById('mainForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearMsgs();
+
+    var email = document.getElementById('authEmail').value.trim();
+    var pass  = document.getElementById('authPassword').value;
+    var btn   = document.getElementById('submitBtn');
+
+    if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+
+    if (_mode === 'register') {
+      /* ── REGISTER flow ── */
+      var name  = document.getElementById('regName').value.trim();
+      var phone = document.getElementById('regPhone').value.trim();
+      var conf  = document.getElementById('authConfirm').value;
+
+      if (!name)              { showErr('Please enter your full name.'); return; }
+      if (!/^\S+@\S+\.\S+$/.test(email)) { showErr('Enter a valid email address.'); return; }
+      if (phone.length < 10) { showErr('Enter a valid 10-digit phone number.'); return; }
+      if (pass.length < 6)   { showErr('Password must be at least 6 characters.'); return; }
+      if (pass !== conf)     { showErr('Passwords do not match.'); return; }
+
+      btn.textContent = 'Creating account…'; btn.disabled = true;
+      var result = await registerUser(name, email, phone, pass);
+      btn.textContent = 'Create Account →'; btn.disabled = false;
+
+      if (!result.ok) { showErr(result.msg); return; }
+      showOk('✅ Account created! Redirecting…');
+      setTimeout(function () {
+        window.location.href =
+          new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      }, 1000);
+
+    } else {
+      /* ── LOGIN flow — auto-detects admin vs user ── */
+      btn.textContent = 'Signing in…'; btn.disabled = true;
+      var result = await loginUser(email, pass);
+      btn.textContent = 'Sign In →'; btn.disabled = false;
+
+      if (!result.ok) { showErr(result.msg || 'Invalid email or password.'); return; }
+
+      /* Route by role */
+      if (result.user.role === 'SUPER_ADMIN') {
+        window.location.href = 'super-admin.html';
+      } else if (result.user.role === 'ADMIN') {
         window.location.href = 'admin.html';
       } else {
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
+        window.location.href =
+          new URLSearchParams(window.location.search).get('redirect') || 'index.html';
       }
     }
+  });
 
-    // ── Tab switching ──
-    function switchTab(tab) {
-      ['login', 'register', 'forgot'].forEach(function(t) {
-        var panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (panel) panel.classList.toggle('active', t === tab);
-      });
-      ['tabLogin', 'tabRegister'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.remove('active');
-      });
-      if (tab === 'login')    document.getElementById('tabLogin').classList.add('active');
-      if (tab === 'register') document.getElementById('tabRegister') && document.getElementById('tabRegister').classList.add('active');
-    }
+  /* ── FORGOT PASSWORD ── */
+  function submitForgot() {
+    clearMsgs();
+    var email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { showErr('Please enter your email address.'); return; }
 
-    // ── Message helpers ──
-    function showMsg(id, msg) {
-      var el = document.getElementById(id);
-      el.textContent = msg;
-      el.style.display = 'block';
-    }
-    function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
-
-    // ── User Login ──
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      hideMsg('loginErr');
-      var email    = document.getElementById('loginEmail').value.trim();
-      var password = document.getElementById('loginPassword').value;
-
-      if (!email || !password) { showMsg('loginErr', 'Please fill in all fields.'); return; }
-
-      var result = await loginUser(email, password);
-      if (!result.ok) { showMsg('loginErr', result.msg); return; }
-
-      if (result.user.role === 'ADMIN') {
-        window.location.href = 'admin.html';
-      } else {
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
-      }
+    fetch((typeof API_URL !== 'undefined' ? API_URL : 'https://e-commerce-1-ariz.onrender.com/api')
+          + '/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    }).then(function (r) {
+      if (r.ok) showOk('✅ Reset link sent to ' + email + '. Check your inbox.');
+      else      showErr('❌ No account found with this email.');
+    }).catch(function () {
+      showErr('❌ Could not reach server. Please try again.');
     });
-
-    // ── Register ──
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      hideMsg('regErr'); hideMsg('regOk');
-      var name     = document.getElementById('regName').value.trim();
-      var email    = document.getElementById('regEmail').value.trim();
-      var phone    = document.getElementById('regPhone').value.trim();
-      var password = document.getElementById('regPassword').value;
-      var confirm  = document.getElementById('regConfirm').value;
-
-      if (!name || !email || !phone || !password) { showMsg('regErr', 'All fields are required.'); return; }
-      if (!/^\S+@\S+\.\S+$/.test(email))          { showMsg('regErr', 'Enter a valid email.'); return; }
-      if (phone.length < 10)                       { showMsg('regErr', 'Enter a valid 10-digit phone.'); return; }
-      if (password.length < 6)                     { showMsg('regErr', 'Password must be at least 6 characters.'); return; }
-      if (password !== confirm)                    { showMsg('regErr', 'Passwords do not match.'); return; }
-
-      var result = await registerUser(name, email, phone, password);
-      if (!result.ok) { showMsg('regErr', result.msg); return; }
-
-      showMsg('regOk', '✅ Account created! Redirecting…');
-      setTimeout(function() {
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
-      }, 1200);
-    });
-
-    // ── Forgot Password ──
-    document.getElementById('forgotForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      hideMsg('forgotErr'); hideMsg('forgotOk');
-      var email = document.getElementById('forgotEmail').value.trim();
-      if (!email) { showMsg('forgotErr', 'Please enter your email.'); return; }
-
-      // Check if user exists locally
-      var users = typeof getStoredUsers === 'function' ? getStoredUsers() : [];
-      var user = users.find(function(u) { return u.email.toLowerCase() === email.toLowerCase(); });
-
-      if (!user) {
-        // Try backend
-        fetch(API_URL + '/auth/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
-        }).then(function(r) {
-          if (r.ok) {
-            showMsg('forgotOk', '✅ Password reset link sent to ' + email + '. Check your inbox.');
-          } else {
-            showMsg('forgotErr', '❌ No account found with this email.');
-          }
-        }).catch(function() {
-          showMsg('forgotErr', '❌ No account found with this email.');
-        });
-        return;
-      }
-
-      // Local: generate temp password
-      var tempPass = 'Reset@' + Math.floor(1000 + Math.random() * 9000);
-      user.password = tempPass;
-      var allUsers = users;
-      localStorage.setItem('urbanManUsers', JSON.stringify(allUsers));
-      showMsg('forgotOk', '✅ Your temporary password is: ' + tempPass + ' — please change it after login.');
-    });
-  </script>
+  }
+</script>
 </body>
 </html>

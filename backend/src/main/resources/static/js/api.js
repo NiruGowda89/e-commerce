@@ -1,5 +1,5 @@
 // ─── API Configuration ────────────────────────────────────────────────────────
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' || window.location.protocol === 'file:')
     ? 'http://localhost:8080/api'
     : 'https://e-commerce-1-ariz.onrender.com/api';
 window.API_URL = API_BASE;

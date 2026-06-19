@@ -27,24 +27,37 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Auth endpoint
+                // ── Public ──────────────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
-                
-                // Products (Public read, Admin modify)
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
-                
-                // Coupons (Admin only)
-                .requestMatchers("/api/coupons/**").hasRole("ADMIN")
-                
-                // Orders (Placed/viewed by users, admin dashboard)
+
+                // ── Products (Public read, Admin / Super-Admin modify) ───────
+                .requestMatchers(HttpMethod.GET,    "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.POST,   "/api/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // ── Coupons (Admin & Super-Admin) ────────────────────────────
+                .requestMatchers("/api/coupons/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // ── Orders ──────────────────────────────────────────────────
                 .requestMatchers("/api/order/place").authenticated()
-                .requestMatchers("/api/order/all").hasRole("ADMIN")
+                .requestMatchers("/api/order/all").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/order/**").authenticated()
-                
-                // Allow static files and public pages
+
+                // ── Reviews ─────────────────────────────────────────────────
+                .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // ── Super-Admin exclusive ────────────────────────────────────
+                // Manage all admins and users (activate / deactivate accounts)
+                .requestMatchers("/api/admin/users/**").hasRole("SUPER_ADMIN")
+                // System analytics and reports
+                .requestMatchers("/api/admin/analytics/**").hasRole("SUPER_ADMIN")
+                // Full platform controls (role assignments, system settings)
+                .requestMatchers("/api/admin/system/**").hasRole("SUPER_ADMIN")
+                // General admin dashboard still accessible to both
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // ── Allow static files and public pages ──────────────────────
                 .anyRequest().permitAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

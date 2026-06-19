@@ -3,6 +3,7 @@ package com.urbanman.ecommerce.service;
 import com.urbanman.ecommerce.model.User;
 import com.urbanman.ecommerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class UserService {
         return userRepo.save(user);
     }
 
-    public User findById(Long id) {
+    public User findById(@NonNull Long id) {
         return userRepo.findById(id).orElse(null);
     }
 

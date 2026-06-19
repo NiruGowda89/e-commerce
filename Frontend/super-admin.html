@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin — Karunada Collections</title>
+  <meta name="description" content="Super Admin control panel for Karunada Collections — full platform management.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0d0d1a;
+      --surface:   #13132a;
+      --surface2:  #1a1a35;
+      --border:    rgba(124,58,237,.25);
+      --purple:    #7c3aed;
+      --purple-lt: #9d67f5;
+      --gold:      #f59e0b;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --blue:      #3b82f6;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --sidebar-w: 260px;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-w);
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 100;
+      transition: transform .3s ease;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo .crown { font-size: 1.5rem; margin-right: 8px; }
+    .sidebar-logo h1 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 0; line-height: 1.2; }
+    .sidebar-logo span { font-size: .72rem; color: var(--gold); font-weight: 500; letter-spacing: .5px; text-transform: uppercase; }
+
+    .sidebar-user {
+      display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+      border-bottom: 1px solid var(--border); background: rgba(124,58,237,.08);
+    }
+    .user-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    }
+    .user-info { min-width: 0; }
+    .user-info .name { font-size: .82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info .badge-sa {
+      display: inline-block; font-size: .62rem; font-weight: 700;
+      background: linear-gradient(90deg,var(--purple),var(--gold));
+      color: #fff; padding: 1px 7px; border-radius: 20px; letter-spacing: .4px;
+    }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .nav-section { padding: 10px 20px 4px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .nav-link-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; font-size: .84rem; color: var(--muted);
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+      transition: all .2s; border-left: 3px solid transparent;
+    }
+    .nav-link-item:hover { color: var(--text); background: rgba(124,58,237,.1); }
+    .nav-link-item.active { color: var(--purple-lt); background: rgba(124,58,237,.15); border-left-color: var(--purple); font-weight: 600; }
+    .nav-link-item .icon { width: 20px; text-align: center; font-size: 1rem; }
+
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .btn-logout {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 9px 14px; border-radius: 8px; border: 1px solid rgba(239,68,68,.3);
+      background: rgba(239,68,68,.08); color: #ef4444; font-size: .82rem;
+      font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,.2); }
+
+    /* ── Main ─────────────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w); min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(13,13,26,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 28px;
+    }
+    .topbar-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .topbar-title span { color: var(--purple-lt); }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .badge-online { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--green); }
+    .badge-online::before { content:''; width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+    .page-content { flex: 1; padding: 28px; }
+
+    /* ── Section pages ─────────────────────────────────────────── */
+    .sa-section { display: none; }
+    .sa-section.active { display: block; animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:none;} }
+
+    .section-head { margin-bottom: 24px; }
+    .section-head h2 { font-size: 1.4rem; font-weight: 700; }
+    .section-head p { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+
+    /* ── KPI Cards ─────────────────────────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .kpi-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; position: relative; overflow: hidden; transition: transform .2s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); }
+    .kpi-card::before {
+      content:''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-card.purple::before { background: linear-gradient(90deg,var(--purple),var(--purple-lt)); }
+    .kpi-card.gold::before   { background: linear-gradient(90deg,var(--gold),#fbbf24); }
+    .kpi-card.green::before  { background: linear-gradient(90deg,var(--green),#34d399); }
+    .kpi-card.blue::before   { background: linear-gradient(90deg,var(--blue),#60a5fa); }
+    .kpi-card.red::before    { background: linear-gradient(90deg,var(--red),#f87171); }
+    .kpi-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .kpi-icon  { position: absolute; right: 16px; top: 18px; font-size: 1.6rem; opacity: .25; }
+    .kpi-sub   { font-size: .72rem; color: var(--muted); margin-top: 6px; }
+    .kpi-sub .up   { color: var(--green); }
+    .kpi-sub .down { color: var(--red); }
+
+    /* ── Charts Row ─────────────────────────────────────────────── */
+    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px;
+    }
+    .chart-card h5 { font-size: .88rem; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    .sa-table-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+    .sa-table-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .sa-table-head h5 { font-size: .9rem; font-weight: 600; margin: 0; }
+    .sa-table { width: 100%; border-collapse: collapse; }
+    .sa-table th {
+      padding: 11px 16px; text-align: left; font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--muted); font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .sa-table td {
+      padding: 13px 16px; font-size: .83rem; border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .sa-table tr:last-child td { border-bottom: none; }
+    .sa-table tr:hover td { background: rgba(124,58,237,.06); }
+
+    /* ── Badges ──────────────────────────────────────────────────── */
+    .badge-role {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: .68rem; font-weight: 700; letter-spacing: .4px;
+    }
+    .badge-role.user       { background: rgba(59,130,246,.2); color: #60a5fa; }
+    .badge-role.admin      { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .badge-role.super_admin{ background: linear-gradient(90deg,rgba(124,58,237,.3),rgba(245,158,11,.2)); color: var(--gold); }
+    .badge-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; }
+    .badge-status.active   { background: rgba(16,185,129,.2); color: #34d399; }
+    .badge-status.inactive { background: rgba(239,68,68,.15);  color: #f87171; }
+    .badge-order { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; }
+    .badge-order.Pending   { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .badge-order.Confirmed { background: rgba(59,130,246,.2); color: #60a5fa; }
+    .badge-order.Shipped   { background: rgba(124,58,237,.2); color: #a78bfa; }
+    .badge-order.Delivered { background: rgba(16,185,129,.2); color: #34d399; }
+    .badge-order.Cancelled { background: rgba(239,68,68,.15); color: #f87171; }
+
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn-sa {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px; border: none;
+      font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .btn-sa.primary { background: var(--purple); color: #fff; }
+    .btn-sa.primary:hover { background: var(--purple-lt); }
+    .btn-sa.danger  { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+    .btn-sa.danger:hover  { background: rgba(239,68,68,.3); }
+    .btn-sa.success { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+    .btn-sa.success:hover { background: rgba(16,185,129,.3); }
+    .btn-sa.sm { padding: 5px 10px; font-size: .73rem; }
+    .btn-sa.gold { background: rgba(245,158,11,.15); color: var(--gold); border: 1px solid rgba(245,158,11,.3); }
+    .btn-sa.gold:hover { background: rgba(245,158,11,.3); }
+
+    /* ── Form ───────────────────────────────────────────────────── */
+    .sa-form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; margin-bottom: 24px;
+    }
+    .sa-form-card h5 { font-size: .9rem; font-weight: 600; margin-bottom: 18px; }
+    .form-group label { font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+    .sa-input {
+      width: 100%; padding: 9px 14px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: .83rem; outline: none; transition: border .2s;
+    }
+    .sa-input:focus { border-color: var(--purple); }
+    .sa-input option { background: var(--surface2); }
+
+    /* ── Search / Filter bar ─────────────────────────────────────── */
+    .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-bar .sa-input { max-width: 260px; }
+
+    /* ── Toast ───────────────────────────────────────────────────── */
+    #saToast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 20px; font-size: .83rem; font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,.4); transform: translateY(80px);
+      opacity: 0; transition: all .35s ease; max-width: 320px;
+    }
+    #saToast.show { transform: none; opacity: 1; }
+    #saToast.success { border-left: 4px solid var(--green); }
+    #saToast.error   { border-left: 4px solid var(--red);   }
+
+    /* ── Overlay modal ──────────────────────────────────────────── */
+    .sa-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .sa-overlay.open { display: flex; }
+    .sa-modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 28px; width: 480px; max-width: 96vw; max-height: 90vh; overflow-y: auto;
+      animation: fadeIn .25s ease;
+    }
+    .sa-modal h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media(max-width:900px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: none; }
+      #main { margin-left: 0; }
+      .charts-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    }
+
+    /* ── Hamburger ───────────────────────────────────────────────── */
+    #menuToggle {
+      display: none; background: none; border: none; color: var(--text);
+      font-size: 1.4rem; cursor: pointer;
+    }
+    @media(max-width:900px) { #menuToggle { display: block; } }
+
+    /* ── System info card ─────────────────────────────────────────── */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 16px; }
+    .info-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .info-item .key { font-size: .72rem; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+    .info-item .val { font-size: .9rem; font-weight: 600; word-break: break-all; }
+
+    /* ── Loading spinner ──────────────────────────────────────────── */
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.2); border-top-color: var(--purple); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-row td { text-align: center; padding: 32px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ───────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;">
+      <span class="crown">👑</span>
+      <div>
+        <h1>Karunada</h1>
+        <span>Super Admin Portal</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="saAvatar">SA</div>
+    <div class="user-info">
+      <div class="name" id="saName">Super Admin</div>
+      <span class="badge-sa">SUPER ADMIN</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <button class="nav-link-item active" data-section="dashboard">
+      <span class="icon">📊</span> Dashboard
+    </button>
+    <button class="nav-link-item" data-section="analytics">
+      <span class="icon">📈</span> Analytics & Reports
+    </button>
+
+    <div class="nav-section">Platform</div>
+    <button class="nav-link-item" data-section="users">
+      <span class="icon">👥</span> User Management
+    </button>
+    <button class="nav-link-item" data-section="admins">
+      <span class="icon">🛡️</span> Admin Management
+    </button>
+    <button class="nav-link-item" data-section="products">
+      <span class="icon">🛍️</span> Products & Inventory
+    </button>
+    <button class="nav-link-item" data-section="orders">
+      <span class="icon">📦</span> All Orders
+    </button>
+    <button class="nav-link-item" data-section="coupons">
+      <span class="icon">🎟️</span> Coupons
+    </button>
+
+    <div class="nav-section">System</div>
+    <button class="nav-link-item" data-section="system">
+      <span class="icon">⚙️</span> System Settings
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="saLogout()">
+      <span>🚪</span> Logout
+    </button>
+  </div>
+</aside>
+
+<!-- ── Main ─────────────────────────────────────────────────── -->
+<div id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button id="menuToggle" onclick="toggleSidebar()">☰</button>
+      <span class="topbar-title">Super Admin &mdash; <span id="topbarSection">Dashboard</span></span>
+    </div>
+    <div class="topbar-actions">
+      <span class="badge-online">System Online</span>
+      <a href="admin.html" style="color:var(--muted);font-size:.8rem;text-decoration:none;">→ Admin Panel</a>
+      <a href="index.html" style="color:var(--muted);font-size:.8rem;text-decoration:none;">→ Store</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ════ DASHBOARD ════ -->
+    <section id="sec-dashboard" class="sa-section active">
+      <div class="section-head">
+        <h2>📊 Dashboard Overview</h2>
+        <p>Real-time platform metrics and performance summary</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card purple">
+          <div class="kpi-label">Total Users</div>
+          <div class="kpi-value" id="kpiUsers">—</div>
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-sub">All registered accounts</div>
+        </div>
+        <div class="kpi-card gold">
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-value" id="kpiRevenue">—</div>
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-sub">From all orders</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-value" id="kpiOrders">—</div>
+          <div class="kpi-icon">📦</div>
+          <div class="kpi-sub"><span class="up" id="kpiDelivered">—</span> delivered</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Products</div>
+          <div class="kpi-value" id="kpiProducts">—</div>
+          <div class="kpi-icon">🛍️</div>
+          <div class="kpi-sub">Active listings</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Pending Orders</div>
+          <div class="kpi-value" id="kpiPending">—</div>
+          <div class="kpi-icon">⏳</div>
+          <div class="kpi-sub">Awaiting action</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h5>📈 Revenue by Order Status</h5>
+          <canvas id="revenueChart" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <h5>🍩 Order Status Split</h5>
+          <canvas id="statusChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>🕒 Recent Orders</h5>
+          <button class="btn-sa primary sm" onclick="showSection('orders')">View All</button>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="dashRecentOrders"><tr class="loading-row"><td colspan="5"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ ANALYTICS ════ -->
+    <section id="sec-analytics" class="sa-section">
+      <div class="section-head">
+        <h2>📈 Analytics & Reports</h2>
+        <p>Full system analytics — revenue, categories, and order trends</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card green">
+          <div class="kpi-label">Avg Order Value</div>
+          <div class="kpi-value" id="anlAvg">—</div>
+          <div class="kpi-icon">📊</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Confirmed</div>
+          <div class="kpi-value" id="anlConfirmed">—</div>
+          <div class="kpi-icon">✅</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Shipped</div>
+          <div class="kpi-value" id="anlShipped">—</div>
+          <div class="kpi-icon">🚚</div>
+        </div>
+        <div class="kpi-card gold">
+          <div class="kpi-label">Cancelled</div>
+          <div class="kpi-value" id="anlCancelled">—</div>
+          <div class="kpi-icon">❌</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h5>🏷️ Revenue by Category</h5>
+          <canvas id="categoryChart" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <h5>📦 Orders by Payment Method</h5>
+          <canvas id="paymentChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head"><h5>🏆 Top Products by Revenue</h5></div>
+        <table class="sa-table">
+          <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th></tr></thead>
+          <tbody id="topProductsTable"><tr class="loading-row"><td colspan="5"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ USERS ════ -->
+    <section id="sec-users" class="sa-section">
+      <div class="section-head">
+        <h2>👥 User Management</h2>
+        <p>View, activate, deactivate and manage all customer accounts</p>
+      </div>
+
+      <div class="filter-bar">
+        <input class="sa-input" type="text" id="userSearch" placeholder="🔍 Search by name or email…" oninput="filterUsersTable()">
+        <select class="sa-input" id="userRoleFilter" onchange="filterUsersTable()" style="max-width:160px;">
+          <option value="">All Roles</option>
+          <option value="USER">User</option>
+          <option value="ADMIN">Admin</option>
+          <option value="SUPER_ADMIN">Super Admin</option>
+        </select>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>All Accounts <span id="userCount" style="color:var(--muted);font-size:.78rem;margin-left:8px;"></span></h5>
+          <button class="btn-sa primary sm" onclick="loadUsersSection()">↻ Refresh</button>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="usersTableBody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ ADMINS ════ -->
+    <section id="sec-admins" class="sa-section">
+      <div class="section-head">
+        <h2>🛡️ Admin Management</h2>
+        <p>Manage admin accounts — promote users, revoke access</p>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Admin Accounts</h5>
+          <button class="btn-sa primary sm" onclick="openPromoteModal()">+ Promote User to Admin</button>
+        </div>
+        <table class="sa-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminsTableBody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ PRODUCTS ════ -->
+    <section id="sec-products" class="sa-section">
+      <div class="section-head">
+        <h2>🛍️ Products & Inventory</h2>
+        <p>Add, edit, and manage the full product catalogue</p>
+      </div>
+
+      <div class="sa-form-card">
+        <h5>➕ Add New Product</h5>
+        <form id="saAddProductForm">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>Product Name *</label>
+              <input type="text" id="saProductName" class="sa-input" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label>Category</label>
+              <select id="saCategory" class="sa-input">
+                <option>Shirts</option><option>T-Shirts</option><option>Jackets</option>
+                <option>Jeans</option><option>Formal Wear</option><option>Sports Wear</option>
+                <option>Shorts</option><option>Accessories</option><option>Ethnic</option><option>New Collection</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label>Brand</label>
+              <input type="text" id="saBrand" class="sa-input" value="Karunada">
+            </div>
+            <div class="form-group col-md-3">
+              <label>Price (₹) *</label>
+              <input type="number" id="saPrice" class="sa-input" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label>Stock *</label>
+              <input type="number" id="saStock" class="sa-input" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label>Size</label>
+              <input type="text" id="saSize" class="sa-input" placeholder="S,M,L,XL">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Color</label>
+              <input type="text" id="saColor" class="sa-input">
+            </div>
+            <div class="form-group col-md-8">
+              <label>Image URL</label>
+              <input type="text" id="saImageUrl" class="sa-input" placeholder="images/shirt.jpg">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="saDescription" class="sa-input" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn-sa primary">✓ Add Product</button>
+        </form>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Product Catalogue <span id="productCount" style="color:var(--muted);font-size:.78rem;margin-left:8px;"></span></h5>
+          <input class="sa-input" type="text" id="productSearch" placeholder="🔍 Search products…" oninput="filterProductsTable()" style="max-width:220px;">
+        </div>
+        <table class="sa-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+          <tbody id="saProductsTable"><tr class="loading-row"><td colspan="6"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ ORDERS ════ -->
+    <section id="sec-orders" class="sa-section">
+      <div class="section-head">
+        <h2>📦 All Orders</h2>
+        <p>View and manage every order across the platform</p>
+      </div>
+
+      <div class="filter-bar">
+        <input class="sa-input" type="text" id="orderSearch" placeholder="🔍 Search by customer or order ID…" oninput="filterOrdersTable()">
+        <select class="sa-input" id="orderStatusFilter" onchange="filterOrdersTable()" style="max-width:160px;">
+          <option value="">All Statuses</option>
+          <option>Pending</option><option>Confirmed</option>
+          <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+        </select>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head">
+          <h5>Orders <span id="orderCount" style="color:var(--muted);font-size:.78rem;margin-left:8px;"></span></h5>
+          <button class="btn-sa primary sm" onclick="loadOrdersSection()">↻ Refresh</button>
+        </div>
+        <table class="sa-table">
+          <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Update</th></tr>
+          </thead>
+          <tbody id="saOrdersTable"><tr class="loading-row"><td colspan="7"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ COUPONS ════ -->
+    <section id="sec-coupons" class="sa-section">
+      <div class="section-head">
+        <h2>🎟️ Coupon Management</h2>
+        <p>Create and manage discount coupons for customers</p>
+      </div>
+
+      <div class="sa-form-card">
+        <h5>➕ Create Coupon</h5>
+        <form id="saAddCouponForm">
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label>Code *</label>
+              <input type="text" id="saCouponCode" class="sa-input" placeholder="SAVE20" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label>Discount %</label>
+              <input type="number" id="saCouponPercent" class="sa-input" placeholder="10">
+            </div>
+            <div class="form-group col-md-3">
+              <label>Flat Discount (₹)</label>
+              <input type="number" id="saCouponAmount" class="sa-input" placeholder="100">
+            </div>
+            <div class="form-group col-md-3">
+              <label>Min Order (₹)</label>
+              <input type="number" id="saCouponMin" class="sa-input" placeholder="500">
+            </div>
+          </div>
+          <button type="submit" class="btn-sa primary">✓ Create Coupon</button>
+          <small style="color:var(--muted);margin-left:12px;font-size:.73rem;">Fill either % or flat amount</small>
+        </form>
+      </div>
+
+      <div class="sa-table-card">
+        <div class="sa-table-head"><h5>Active Coupons</h5></div>
+        <table class="sa-table">
+          <thead><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="saCouponTable"><tr class="loading-row"><td colspan="5"><span class="spinner"></span></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ════ SYSTEM ════ -->
+    <section id="sec-system" class="sa-section">
+      <div class="section-head">
+        <h2>⚙️ System Settings</h2>
+        <p>Platform configuration and environment information</p>
+      </div>
+
+      <div class="sa-form-card" style="margin-bottom:20px;">
+        <h5>🔗 API Configuration</h5>
+        <div class="form-group">
+          <label>Backend API Base URL</label>
+          <div style="display:flex;gap:10px;">
+            <input type="text" id="sysApiUrl" class="sa-input" placeholder="https://...">
+            <button class="btn-sa primary" onclick="saveApiUrl()">Save</button>
+            <button class="btn-sa gold" onclick="testApi()">Test Connection</button>
+          </div>
+          <small id="apiTestResult" style="font-size:.73rem;margin-top:6px;display:block;"></small>
+        </div>
+      </div>
+
+      <div class="info-grid" id="systemInfoGrid">
+        <div class="info-item">
+          <div class="key">Portal</div>
+          <div class="val">Karunada Super Admin</div>
+        </div>
+        <div class="info-item">
+          <div class="key">API Endpoint</div>
+          <div class="val" id="sysCurrApi">—</div>
+        </div>
+        <div class="info-item">
+          <div class="key">Logged In As</div>
+          <div class="val" id="sysLoggedAs">—</div>
+        </div>
+        <div class="info-item">
+          <div class="key">Role</div>
+          <div class="val"><span class="badge-role super_admin">SUPER ADMIN</span></div>
+        </div>
+        <div class="info-item">
+          <div class="key">Admin Panel</div>
+          <div class="val"><a href="admin.html" style="color:var(--purple-lt);">admin.html →</a></div>
+        </div>
+        <div class="info-item">
+          <div class="key">Store</div>
+          <div class="val"><a href="index.html" style="color:var(--purple-lt);">index.html →</a></div>
+        </div>
+      </div>
+
+      <div class="sa-form-card" style="margin-top:20px;border-color:rgba(239,68,68,.3);">
+        <h5 style="color:var(--red);">⚠️ Danger Zone</h5>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px;">These actions are irreversible. Proceed with caution.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-sa danger" onclick="confirmAction('Clear all coupons?', clearCoupons)">🗑 Clear All Coupons</button>
+          <button class="btn-sa danger" onclick="confirmAction('This will logout your session.', saLogout)">🔒 Force Logout</button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.page-content -->
+</div><!-- /#main -->
+
+<!-- ── Toast ─────────────────────────────────────────────────── -->
+<div id="saToast"></div>
+
+<!-- ── Promote Modal ──────────────────────────────────────────── -->
+<div class="sa-overlay" id="promoteOverlay">
+  <div class="sa-modal">
+    <h4>🛡️ Promote User to Admin</h4>
+    <div class="form-group">
+      <label>User Email</label>
+      <input type="email" id="promoteEmail" class="sa-input" placeholder="user@example.com">
+    </div>
+    <div class="form-group" style="margin-top:14px;">
+      <label>New Role</label>
+      <select id="promoteRole" class="sa-input">
+        <option value="ADMIN">Admin</option>
+        <option value="SUPER_ADMIN">Super Admin</option>
+        <option value="USER">Demote to User</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sa danger" onclick="closeModal('promoteOverlay')">Cancel</button>
+      <button class="btn-sa primary" onclick="promoteUser()">Apply Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ────────────────────────────────────────────────── -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/super-admin.js"></script>
+</body>
+</html>

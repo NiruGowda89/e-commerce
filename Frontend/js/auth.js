@@ -11,7 +11,8 @@
 })();
 
 if (typeof API_URL === "undefined") {
-  window.API_URL = localStorage.getItem('karunada_api_base') || "https://e-commerce-1-ariz.onrender.com/api";
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '' || window.location.protocol === 'file:';
+  window.API_URL = localStorage.getItem('karunada_api_base') || (isLocal ? "http://localhost:8080/api" : "https://e-commerce-1-ariz.onrender.com/api");
 }
 var API_URL = window.API_URL;
 
@@ -24,10 +25,15 @@ var ADMIN_AUTH_KEY = 'urbanManAdmin';
 
 function getAdmin() {
   const user = getCurrentUser();
-  if (user && user.role === 'ADMIN') {
+  if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
     return user;
   }
   return null;
+}
+
+function getSuperAdmin() {
+  const user = getCurrentUser();
+  return (user && user.role === 'SUPER_ADMIN') ? user : null;
 }
 
 function logoutAdmin() {
@@ -36,6 +42,12 @@ function logoutAdmin() {
 
 function requireAdmin() {
   if (!getAdmin()) {
+    window.location.href = 'login.html';
+  }
+}
+
+function requireSuperAdmin() {
+  if (!getSuperAdmin()) {
     window.location.href = 'login.html';
   }
 }
@@ -114,7 +126,11 @@ function refreshAuthNav() {
 
   if (user) {
     let menuHtml = '';
-    if (user.role === 'ADMIN') {
+    if (user.role === 'SUPER_ADMIN') {
+        menuHtml =
+            '<a class="dropdown-item" href="super-admin.html">👑 Super Admin Portal</a>' +
+            '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
+    } else if (user.role === 'ADMIN') {
         menuHtml = '<a class="dropdown-item" href="admin.html">🛡️ Admin Dashboard</a>';
     } else {
         menuHtml =

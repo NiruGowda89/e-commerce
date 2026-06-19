@@ -38,7 +38,7 @@ public class User {
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     public enum Role {
-        USER, ADMIN
+        USER, ADMIN, SUPER_ADMIN
     }
     
     @PreUpdate

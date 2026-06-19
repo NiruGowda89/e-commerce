@@ -8,6 +8,7 @@ import com.urbanman.ecommerce.service.ProductService;
 import com.urbanman.ecommerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -37,8 +38,8 @@ public class ReviewController {
     // Submit a review
     @PostMapping
     public ResponseEntity<?> addReview(@RequestBody Map<String, Object> body) {
-        Long productId = Long.valueOf(body.get("productId").toString());
-        Long userId    = Long.valueOf(body.get("userId").toString());
+        long productId = Long.parseLong(body.get("productId").toString());
+        long userId    = Long.parseLong(body.get("userId").toString());
         Integer rating = Integer.valueOf(body.get("rating").toString());
         String comment = body.getOrDefault("comment", "").toString();
 
@@ -70,7 +71,7 @@ public class ReviewController {
 
     // Delete a review
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<String> deleteReview(@PathVariable Long reviewId) {
+    public ResponseEntity<String> deleteReview(@PathVariable @NonNull Long reviewId) {
         reviewRepo.deleteById(reviewId);
         return ResponseEntity.ok("Review deleted");
     }

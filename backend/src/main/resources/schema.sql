@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       VARCHAR(150)    NOT NULL UNIQUE,
     phone       VARCHAR(15),
     password    VARCHAR(255)    NOT NULL,           -- BCrypt hash
-    role        ENUM('USER','ADMIN') NOT NULL DEFAULT 'USER',
+    role        ENUM('USER','ADMIN','SUPER_ADMIN') NOT NULL DEFAULT 'USER',
     active      TINYINT(1)      NOT NULL DEFAULT 1,
     created_at  DATETIME        DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -175,10 +175,24 @@ CREATE TABLE IF NOT EXISTS order_items (
 --  SAMPLE SEED DATA
 -- ============================================================
 
--- Admin user (password: admin123 — replace with BCrypt hash in production)
+-- ============================================================
+--  DEFAULT USER ACCOUNTS  (BCrypt cost 10)
+-- ============================================================
+
+-- Default User  |  user@karunada.com  |  Usr#kP9m@3xQ
+INSERT IGNORE INTO users (name, email, phone, password, role) VALUES
+('Default User', 'user@karunada.com', '8888888888',
+ '$2a$10$AzCDr2w6mp5ZlN75heooQ.yxKp07gVL6FcrQ7Zxi5inqZUHNJEGy6', 'USER');
+
+-- Admin  |  admin@karunada.com  |  Adm@8nL5r#7vZ
 INSERT IGNORE INTO users (name, email, phone, password, role) VALUES
 ('Admin', 'admin@karunada.com', '9999999999',
- '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMblYaLDmy', 'ADMIN');
+ '$2a$10$48NUVkmfMxv5G7MT2zHaRuQsCQJDPBLL5VCJAtUAmd.ltHMUlqkDS', 'ADMIN');
+
+-- Super Admin  |  superadmin@karunada.com  |  SAdm@7kR#9mXp2
+INSERT IGNORE INTO users (name, email, phone, password, role) VALUES
+('Super Admin', 'superadmin@karunada.com', '7777777777',
+ '$2a$10$FwPhNyieDL5uwg1xAsNTl.Xk1dEaA/uf8EI5kOY9ae.NCz5fyWqzC', 'SUPER_ADMIN');
 
 -- Sample products
 INSERT IGNORE INTO products (product_name, category, brand, price, size, color, stock, image_url, description) VALUES

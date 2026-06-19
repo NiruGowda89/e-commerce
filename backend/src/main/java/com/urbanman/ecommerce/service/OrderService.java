@@ -3,6 +3,7 @@ package com.urbanman.ecommerce.service;
 import com.urbanman.ecommerce.model.Order;
 import com.urbanman.ecommerce.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +29,7 @@ public class OrderService {
         return orderRepo.findByStatus(status);
     }
 
-    public Order updateOrderStatus(Long orderId, String status) {
+    public Order updateOrderStatus(@NonNull Long orderId, String status) {
         Order order = orderRepo.findById(orderId).orElseThrow();
         order.setStatus(status);
         return orderRepo.save(order);
