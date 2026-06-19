@@ -593,7 +593,10 @@
       try {
         const bp = await apiGetProducts();
         if (bp && bp.length > 0) {
-          document.getElementById('statProducts').textContent = bp.length;
+          const statProductsEl = document.getElementById('statProducts');
+          if (statProductsEl) {
+            statProductsEl.textContent = bp.length;
+          }
           featRail.innerHTML = bp.slice(0, 10).map(buildCard).join('');
           newRail.innerHTML  = [...bp].reverse().slice(0, 10).map(buildCard).join('');
         } else {
@@ -601,7 +604,7 @@
           offlineState('newRail');
         }
       } catch (e) {
-        console.warn('Backend offline — cannot load products');
+        console.warn('Backend offline — cannot load products', e);
         offlineState('featuredRail');
         offlineState('newRail');
       }
@@ -611,7 +614,10 @@
         const user = JSON.parse(localStorage.getItem('user') || 'null');
         if (user && user.id) {
           const orders = await apiGetOrders(user.id);
-          document.getElementById('statOrders').textContent = orders.length || 0;
+          const statOrdersEl = document.getElementById('statOrders');
+          if (statOrdersEl) {
+            statOrdersEl.textContent = orders.length || 0;
+          }
         }
       } catch(e) {}
     }
