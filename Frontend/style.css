@@ -10,7 +10,7 @@
 
 body {
   font-family: 'Poppins', 'Segoe UI', sans-serif;
-  background: #f4f5f7;
+  background:darkturquoise;
   color: #1a1a2e;
   min-height: 100vh;
 }
@@ -303,7 +303,7 @@ body {
 footer {
   background: linear-gradient(90deg, #0f0c29, #302b63) !important;
   margin-top: 60px;
-  padding: 20px !important;
+  padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
 }
 footer p { font-size: 0.85rem; opacity: 0.8; }
 footer a { color: #ffc107 !important; text-decoration: none; font-weight: 600; }
@@ -1499,7 +1499,8 @@ footer a:hover { text-decoration: underline; }
 
 /* Safe-area padding for notched / full-screen APK builds */
 .navbar {
-  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+  padding-bottom: 8px !important;
 }
 
 /* Prevent horizontal scroll bleed on small screens */
@@ -1569,7 +1570,7 @@ input, textarea, select {
   align-items: center;
   justify-content: space-between;
   background: linear-gradient(90deg, #0f0c29, #302b63);
-  padding: max(env(safe-area-inset-top, 0px), 0px) 20px 0;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 12px;
   min-height: 52px;
   position: sticky;
   top: 0;
@@ -2246,4 +2247,187 @@ input, textarea, select {
 @media (max-width: 480px) {
   .oc-cta-row     { flex-direction: column; }
   .oc-hero__title { font-size: 1.25rem; }
+}
+
+/* ════════════════════════════════════════════════════════
+   APK & PROFILE SETTINGS CUSTOM STYLES
+   ════════════════════════════════════════════════════════ */
+
+/* ── Accent Themes ── */
+body.theme-indigo {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+body.theme-indigo .navbar,
+body.theme-indigo footer,
+body.theme-indigo .co-header {
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6) !important;
+}
+
+body.theme-purple {
+  background: #f5f3ff;
+  color: #3b0764;
+}
+body.theme-purple .navbar,
+body.theme-purple footer,
+body.theme-purple .co-header {
+  background: linear-gradient(90deg, #4c1d95, #7c3aed) !important;
+}
+
+/* ── Dark Theme ── */
+body.theme-dark {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+body.theme-dark .navbar,
+body.theme-dark footer,
+body.theme-dark .co-header {
+  background: linear-gradient(90deg, #1e293b, #334155) !important;
+}
+body.theme-dark .acct-panel,
+body.theme-dark .card,
+body.theme-dark .acct-sidebar,
+body.theme-dark .co-card,
+body.theme-dark .co-summary-card,
+body.theme-dark .modal-content {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  border: 1px solid #334155 !important;
+}
+body.theme-dark .card-title,
+body.theme-dark .acct-panel-hdr h5,
+body.theme-dark .acct-form-group label,
+body.theme-dark .acct-form-section-hdr,
+body.theme-dark .pd-title,
+body.theme-dark .pd-price,
+body.theme-dark .co-step-title,
+body.theme-dark .co-label,
+body.theme-dark .co-summary-hdr,
+body.theme-dark .co-summary-total-row,
+body.theme-dark .co-summary-row,
+body.theme-dark .acct-username,
+body.theme-dark .support-topics__title,
+body.theme-dark .support-topic-item,
+body.theme-dark .support-card__label,
+body.theme-dark .support-card__value,
+body.theme-dark .support-card__hint,
+body.theme-dark .pay-section-title,
+body.theme-dark .pay-upi-name,
+body.theme-dark .pay-upi-id,
+body.theme-dark .acct-empty-state p {
+  color: #ffffff !important;
+}
+body.theme-dark .form-control,
+body.theme-dark .acct-input,
+body.theme-dark .co-input,
+body.theme-dark .co-select-wrap select {
+  background: #334155 !important;
+  color: #ffffff !important;
+  border-color: #475569 !important;
+}
+body.theme-dark .form-control:focus,
+body.theme-dark .acct-input:focus,
+body.theme-dark .co-input:focus {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #6366f1 !important;
+}
+body.theme-dark .table thead th {
+  background: linear-gradient(90deg, #1e293b, #334155) !important;
+}
+body.theme-dark .table tbody tr:hover {
+  background: #334155 !important;
+}
+body.theme-dark .table td {
+  color: #e2e8f0 !important;
+}
+body.theme-dark .acct-nav-item {
+  color: #cbd5e1 !important;
+}
+body.theme-dark .acct-nav-item:hover,
+body.theme-dark .acct-nav-item.active {
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+}
+body.theme-dark .acct-nav-group-label {
+  color: #94a3b8 !important;
+}
+body.theme-dark .acct-edit-btn {
+  color: #38bdf8 !important;
+}
+body.theme-dark .support-topic-item {
+  border-bottom-color: #334155 !important;
+}
+
+/* ── Profile Custom Avatar Controls ── */
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 16px;
+  border-radius: 12px;
+}
+body.theme-dark .profile-avatar-section {
+  background: rgba(255, 255, 255, 0.03);
+}
+.avatar-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #ffc107;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background-color: #302b63;
+  flex-shrink: 0;
+}
+.avatar-edit-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.avatar-emoji-grid {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.avatar-emoji-btn {
+  font-size: 1.3rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s;
+  padding: 0;
+}
+body.theme-dark .avatar-emoji-btn {
+  background: #334155;
+  border-color: #475569;
+}
+.avatar-emoji-btn:hover { transform: scale(1.15); }
+
+/* ── Password block ── */
+.profile-password-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+}
+body.theme-dark .profile-password-card {
+  background: #1e293b;
+  border-color: #334155;
 }

@@ -81,6 +81,7 @@
             </div>
             <a class="acct-nav-item active" id="nav-profile"     onclick="showPanel('profile')">Profile Information</a>
             <a class="acct-nav-item"        id="nav-addresses"   onclick="showPanel('addresses')">Manage Addresses</a>
+            <a class="acct-nav-item"        id="nav-app-settings" onclick="showPanel('app-settings')">APK / App Settings</a>
           </div>
 
           <!-- PAYMENTS -->
@@ -135,6 +136,31 @@
             <button class="acct-edit-btn" id="profileEditBtn" onclick="toggleProfileEdit()">Edit</button>
           </div>
           <form id="profileForm" class="acct-form" onsubmit="saveProfile(event)">
+            
+            <!-- Avatar Section -->
+            <div class="profile-avatar-section">
+              <div class="avatar-lg" id="profileAvatarDisplay">👤</div>
+              <div class="avatar-edit-controls">
+                <span class="font-weight-bold" style="font-size:0.88rem;">Profile Avatar</span>
+                <!-- File upload (only shown when editing) -->
+                <div id="avatarUploadWrap" style="display:none;">
+                  <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+                  <button type="button" class="btn btn-xs btn-outline-primary" onclick="document.getElementById('avatarFileInput').click()">📤 Upload Photo</button>
+                </div>
+                <!-- Emoji selectors (only shown when editing) -->
+                <div id="avatarEmojiWrap" style="display:none;">
+                  <span class="text-muted small">Or select emoji:</span>
+                  <div class="avatar-emoji-grid">
+                    <button type="button" class="avatar-emoji-btn" onclick="selectEmojiAvatar('👤')">👤</button>
+                    <button type="button" class="avatar-emoji-btn" onclick="selectEmojiAvatar('🕶️')">🕶️</button>
+                    <button type="button" class="avatar-emoji-btn" onclick="selectEmojiAvatar('🧑‍💻')">🧑‍💻</button>
+                    <button type="button" class="avatar-emoji-btn" onclick="selectEmojiAvatar('🦊')">🦊</button>
+                    <button type="button" class="avatar-emoji-btn" onclick="selectEmojiAvatar('🦁')">🦁</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="acct-form-row">
               <div class="acct-form-group">
                 <label>First Name</label>
@@ -145,13 +171,20 @@
                 <input type="text" id="pfLastName" class="acct-input" readonly placeholder="Last Name">
               </div>
             </div>
+
+            <!-- Date of Birth field -->
+            <div class="acct-form-group" style="max-width:340px;">
+              <label>Date of Birth</label>
+              <input type="date" id="pfDob" class="acct-input" readonly>
+            </div>
+
             <div class="acct-form-section-hdr">
               Your Gender
               <span class="acct-edit-link" id="genderEditHint"></span>
             </div>
             <div class="acct-gender-row">
-              <label class="acct-radio"><input type="radio" name="gender" value="Male"  id="gMale">   Male</label>
-              <label class="acct-radio"><input type="radio" name="gender" value="Female" id="gFemale"> Female</label>
+              <label class="acct-radio"><input type="radio" name="gender" value="Male"  id="gMale" disabled>   Male</label>
+              <label class="acct-radio"><input type="radio" name="gender" value="Female" id="gFemale" disabled> Female</label>
             </div>
             <div class="acct-panel-hdr mt-4">
               <h5>Email Address</h5>
@@ -167,9 +200,31 @@
             <div class="acct-form-group" style="max-width:340px;">
               <input type="tel" id="pfPhone" class="acct-input" readonly placeholder="+91 XXXXX XXXXX">
             </div>
-            <button type="submit" class="acct-save-btn" id="profileSaveBtn" style="display:none;">
-              Save Changes
-            </button>
+
+            <!-- Change Password subcard (only editable in edit mode) -->
+            <div class="profile-password-card">
+              <h6 class="font-weight-bold mb-3">🔑 Change Password</h6>
+              <div class="acct-form-group">
+                <label>Current Password</label>
+                <input type="password" id="pfCurrPassword" class="acct-input" readonly placeholder="••••••••">
+              </div>
+              <div class="acct-form-row">
+                <div class="acct-form-group">
+                  <label>New Password</label>
+                  <input type="password" id="pfNewPassword" class="acct-input" readonly placeholder="At least 6 chars">
+                </div>
+                <div class="acct-form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="pfConfPassword" class="acct-input" readonly placeholder="Repeat new password">
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <button type="submit" class="acct-save-btn" id="profileSaveBtn" style="display:none;">
+                Save Changes
+              </button>
+            </div>
             <div id="profileMsg" class="mt-2"></div>
           </form>
 
@@ -458,7 +513,68 @@
         </div>
         <!-- / CUSTOMER SUPPORT PANEL -->
 
-      </main>
+        <!-- ── APK / APP SETTINGS PANEL ── -->
+        <div class="acct-panel" id="panel-app-settings" style="display:none;">
+          <div class="acct-panel-hdr mb-3">
+            <h5>APK &amp; App Settings</h5>
+          </div>
+          
+          <div class="card p-3 shadow-sm mb-4">
+            <h6 class="font-weight-bold text-dark mb-3">🛠️ Backend Server Settings</h6>
+            <div class="form-group">
+              <label for="appApiUrl" class="font-weight-bold text-secondary" style="font-size:0.82rem;">Backend API URL</label>
+              <input type="url" id="appApiUrl" class="form-control" placeholder="https://e-commerce-1-ariz.onrender.com/api">
+              <small class="text-muted d-block mt-1">Set this to your local server (e.g. <code>http://10.0.2.2:8080/api</code> for Android Emulator) or custom staging server.</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm" onclick="saveApiUrlSetting()">Save API URL</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm ml-2" onclick="resetApiUrlSetting()">Reset to Default</button>
+            </div>
+          </div>
+
+          <div class="card p-3 shadow-sm mb-4">
+            <h6 class="font-weight-bold text-dark mb-3">📱 APK Features &amp; Device Options</h6>
+            
+            <div class="custom-control custom-switch mb-3">
+              <input type="checkbox" class="custom-control-input" id="appBiometricToggle" onchange="toggleAppBiometric()">
+              <label class="custom-control-label font-weight-bold" for="appBiometricToggle">Enable Biometric Login</label>
+              <small class="d-block text-muted">Prompt for Face ID / Fingerprint authentication when launching the APK.</small>
+            </div>
+
+            <div class="custom-control custom-switch mb-3">
+              <input type="checkbox" class="custom-control-input" id="appNotifyToggle" onchange="toggleAppNotify()">
+              <label class="custom-control-label font-weight-bold" for="appNotifyToggle">Enable Push Notifications</label>
+              <small class="d-block text-muted">Receive status updates and flash deal alerts via system notification tray.</small>
+            </div>
+
+            <div class="custom-control custom-switch mb-3">
+              <input type="checkbox" class="custom-control-input" id="appImmersiveToggle" onchange="toggleAppImmersive()">
+              <label class="custom-control-label font-weight-bold" for="appImmersiveToggle">Immersive Fullscreen Mode</label>
+              <small class="d-block text-muted">Hides system navigation bar and status bar for a clean full-bleed app experience.</small>
+            </div>
+          </div>
+
+          <div class="card p-3 shadow-sm mb-4">
+            <h6 class="font-weight-bold text-dark mb-3">🎨 Theme &amp; Visual Settings</h6>
+            <div class="form-group">
+              <label for="appThemeSelect" class="font-weight-bold text-secondary" style="font-size:0.82rem;">App Accent Theme</label>
+              <select id="appThemeSelect" class="form-control" onchange="changeAppTheme()">
+                <option value="turquoise">Default Turquoise</option>
+                <option value="indigo">Classic Indigo</option>
+                <option value="dark">Vibrant Dark Mode</option>
+                <option value="purple">Premium Deep Purple</option>
+              </select>
+              <small class="text-muted">Choose your preferred style for the interface.</small>
+            </div>
+          </div>
+
+          <div class="card p-3 shadow-sm border-danger">
+            <h6 class="font-weight-bold text-danger mb-3">⚠️ Danger Zone</h6>
+            <p class="text-muted small">Clearing app data will log you out, clear your shopping cart, and reset all custom APK settings.</p>
+            <button type="button" class="btn btn-danger btn-sm" onclick="clearAppDataSetting()">Reset &amp; Clear App Data</button>
+          </div>
+        </div>
+        <!-- / APK / APP SETTINGS PANEL -->
       <!-- ══════════ / MAIN PANEL ══════════ -->
 
     </div>

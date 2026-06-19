@@ -14,12 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Populate sidebar greeting
-    const nameParts = (user.name || 'User').split(' ');
-    const initial   = nameParts[0][0].toUpperCase();
-    const elAvatar  = document.getElementById('sidebarAvatar');
     const elName    = document.getElementById('sidebarName');
-    if (elAvatar) elAvatar.textContent = initial;
     if (elName)   elName.textContent   = user.name || 'User';
+    const profile = getSavedProfile();
+    updateSidebarAvatar(user, profile);
 
     // Read hash AFTER auth confirmed — handles redirect from checkout
     // Use a tiny defer so the browser has fully parsed the hash from the URL
@@ -70,6 +68,7 @@ function showPanel(name) {
     if (name === 'profile')       renderProfilePanel();
     if (name === 'addresses')     renderAddressPanel();
     if (name === 'wishlist')      renderWishlistPanel();
+    if (name === 'app-settings')  renderAppSettingsPanel();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -84,14 +83,38 @@ function renderProfilePanel() {
     const email     = profile.email     || (user ? user.email  : '');
     const phone     = profile.phone     || (user ? user.phone  : '');
     const gender    = profile.gender    || '';
+    const dob       = profile.dob       || '';
 
     setVal('pfFirstName', firstName);
     setVal('pfLastName',  lastName);
     setVal('pfEmail',     email);
     setVal('pfPhone',     phone);
+    setVal('pfDob',       dob);
+
+    setVal('pfCurrPassword', '');
+    setVal('pfNewPassword', '');
+    setVal('pfConfPassword', '');
 
     if (gender === 'Male')   setChecked('gMale',   true);
     if (gender === 'Female') setChecked('gFemale', true);
+
+    // Render Avatar Display
+    const disp = document.getElementById('profileAvatarDisplay');
+    if (disp) {
+        if (profile.avatarImage) {
+            disp.style.backgroundImage = `url(${profile.avatarImage})`;
+            disp.textContent = '';
+        } else if (profile.avatarEmoji) {
+            disp.style.backgroundImage = 'none';
+            disp.textContent = profile.avatarEmoji;
+        } else {
+            disp.style.backgroundImage = 'none';
+            disp.textContent = '👤';
+        }
+    }
+
+    // Sync sidebar greeting
+    updateSidebarAvatar(user, profile);
 }
 
 function getSavedProfile() {
@@ -109,19 +132,50 @@ function toggleProfileEdit() {
 
     inputs.forEach(i => i.readOnly  = !_profileEditing);
     radios.forEach(r => r.disabled  = !_profileEditing);
+
+    // Show/hide avatar editing controls
+    const uploadWrap = document.getElementById('avatarUploadWrap');
+    const emojiWrap  = document.getElementById('avatarEmojiWrap');
+    if (uploadWrap) uploadWrap.style.display = _profileEditing ? 'block' : 'none';
+    if (emojiWrap)  emojiWrap.style.display  = _profileEditing ? 'block' : 'none';
+
     if (saveBtn) saveBtn.style.display = _profileEditing ? 'inline-flex' : 'none';
     if (editBtn) editBtn.textContent   = _profileEditing ? 'Cancel' : 'Edit';
 }
 
 function saveProfile(e) {
     e.preventDefault();
-    const profile = {
-        firstName: getVal('pfFirstName'),
-        lastName:  getVal('pfLastName'),
-        email:     getVal('pfEmail'),
-        phone:     getVal('pfPhone'),
-        gender:    document.querySelector('input[name="gender"]:checked')?.value || '',
-    };
+
+    const profile = getSavedProfile();
+    profile.firstName = getVal('pfFirstName');
+    profile.lastName  = getVal('pfLastName');
+    profile.email     = getVal('pfEmail');
+    profile.phone     = getVal('pfPhone');
+    profile.dob       = getVal('pfDob');
+    profile.gender    = document.querySelector('input[name="gender"]:checked')?.value || '';
+
+    if (_selectedAvatarImage) {
+        profile.avatarImage = _selectedAvatarImage;
+        profile.avatarEmoji = null;
+    } else if (_selectedAvatarEmoji) {
+        profile.avatarEmoji = _selectedAvatarEmoji;
+        profile.avatarImage = null;
+    }
+
+    // Handle Password Change Validation
+    const currPass = getVal('pfCurrPassword');
+    const newPass  = getVal('pfNewPassword');
+    const confPass = getVal('pfConfPassword');
+
+    if (currPass || newPass || confPass) {
+        if (!currPass) { alert('Current password is required to change password.'); return; }
+        if (newPass.length < 6) { alert('New password must be at least 6 characters.'); return; }
+        if (newPass !== confPass) { alert('New passwords do not match.'); return; }
+        
+        // Mocking password update success
+        alert('Password changed successfully! (Mocked)');
+    }
+
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 
     // Also update the auth store so the navbar name updates
@@ -131,11 +185,13 @@ function saveProfile(e) {
         user.email = profile.email || user.email;
         user.phone = profile.phone || user.phone;
         localStorage.setItem(ACCT_KEY, JSON.stringify(user));
-        refreshAuthNav();
+        
+        if (typeof refreshAuthNav === 'function') refreshAuthNav();
+        
         const elName = document.getElementById('sidebarName');
         if (elName) elName.textContent = user.name;
-        const elAvatar = document.getElementById('sidebarAvatar');
-        if (elAvatar) elAvatar.textContent = user.name[0].toUpperCase();
+        
+        updateSidebarAvatar(user, profile);
     }
 
     const msg = document.getElementById('profileMsg');
@@ -470,3 +526,156 @@ window.openUpiApp = function (app) {
 
     window.location.href = schemes[app] || `upi://pay?pa=${vpa}&pn=${MERCHANT_NAME}&cu=INR&tn=${note}`;
 };
+
+// ─── Avatar Helpers ───────────────────────────────────────────────────────────
+let _selectedAvatarImage = null;
+let _selectedAvatarEmoji = null;
+
+function selectEmojiAvatar(emoji) {
+    _selectedAvatarEmoji = emoji;
+    _selectedAvatarImage = null;
+    const disp = document.getElementById('profileAvatarDisplay');
+    if (disp) {
+        disp.style.backgroundImage = 'none';
+        disp.textContent = emoji;
+    }
+}
+
+function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        _selectedAvatarImage = e.target.result;
+        _selectedAvatarEmoji = null;
+        const disp = document.getElementById('profileAvatarDisplay');
+        if (disp) {
+            disp.style.backgroundImage = `url(${_selectedAvatarImage})`;
+            disp.textContent = '';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function updateSidebarAvatar(user, profile) {
+    const elAvatar = document.getElementById('sidebarAvatar');
+    if (!elAvatar) return;
+    
+    if (profile.avatarImage) {
+        elAvatar.style.backgroundImage = `url(${profile.avatarImage})`;
+        elAvatar.textContent = '';
+        elAvatar.style.fontSize = '1.2rem';
+    } else if (profile.avatarEmoji) {
+        elAvatar.style.backgroundImage = 'none';
+        elAvatar.textContent = profile.avatarEmoji;
+        elAvatar.style.fontSize = '1.4rem';
+    } else {
+        const nameParts = (user ? user.name || 'User' : 'User').split(' ');
+        const initial   = nameParts[0][0].toUpperCase();
+        elAvatar.style.backgroundImage = 'none';
+        elAvatar.textContent = initial;
+        elAvatar.style.fontSize = '1.2rem';
+    }
+}
+
+// ─── App Settings Panels & Handlers ───────────────────────────────────────────
+function renderAppSettingsPanel() {
+    // API URL base
+    const currentApi = localStorage.getItem('karunada_api_base') || 'https://e-commerce-1-ariz.onrender.com/api';
+    setVal('appApiUrl', currentApi);
+
+    // Checkboxes
+    setChecked('appBiometricToggle', localStorage.getItem('karunada_app_biometric') === 'true');
+    setChecked('appNotifyToggle', localStorage.getItem('karunada_app_notify') === 'true');
+    setChecked('appImmersiveToggle', localStorage.getItem('karunada_app_immersive') === 'true');
+
+    // Theme selector
+    const themeSelect = document.getElementById('appThemeSelect');
+    if (themeSelect) {
+        themeSelect.value = localStorage.getItem('karunada_app_theme') || 'turquoise';
+    }
+}
+
+function saveApiUrlSetting() {
+    const val = getVal('appApiUrl').trim();
+    if (!val) {
+        resetApiUrlSetting();
+        return;
+    }
+    try {
+        new URL(val); // validate format
+    } catch(e) {
+        alert('Please enter a valid absolute URL (e.g. https://example.com/api)');
+        return;
+    }
+    localStorage.setItem('karunada_api_base', val);
+    alert('API URL updated successfully! Reloading to apply settings...');
+    window.location.reload();
+}
+
+function resetApiUrlSetting() {
+    localStorage.removeItem('karunada_api_base');
+    alert('API URL reset to system default. Reloading to apply settings...');
+    window.location.reload();
+}
+
+function toggleAppBiometric() {
+    const enabled = document.getElementById('appBiometricToggle')?.checked;
+    localStorage.setItem('karunada_app_biometric', enabled ? 'true' : 'false');
+    showToast(enabled ? '🔐 Biometric login enabled for APK' : '🔓 Biometric login disabled', 'info');
+}
+
+function toggleAppNotify() {
+    const enabled = document.getElementById('appNotifyToggle')?.checked;
+    localStorage.setItem('karunada_app_notify', enabled ? 'true' : 'false');
+    if (enabled) {
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showToast('🔔 Push Notifications enabled!', 'success');
+                } else {
+                    showToast('⚠️ Notifications permission blocked by system', 'warning');
+                }
+            });
+        } else {
+            showToast('🔔 Push Notifications simulated for APK!', 'success');
+        }
+    } else {
+        showToast('🔕 Push Notifications disabled', 'info');
+    }
+}
+
+function toggleAppImmersive() {
+    const enabled = document.getElementById('appImmersiveToggle')?.checked;
+    localStorage.setItem('karunada_app_immersive', enabled ? 'true' : 'false');
+    if (enabled) {
+        document.documentElement.requestFullscreen?.()
+            .catch(() => showToast('📱 Immersive Mode simulated (unsupported on this device)', 'info'));
+    } else {
+        if (document.fullscreenElement) {
+            document.exitFullscreen?.();
+        }
+    }
+}
+
+function changeAppTheme() {
+    const select = document.getElementById('appThemeSelect');
+    if (!select) return;
+    const theme = select.value;
+    localStorage.setItem('karunada_app_theme', theme);
+
+    // Remove existing themes
+    document.body.classList.remove('theme-turquoise', 'theme-indigo', 'theme-dark', 'theme-purple');
+    document.body.classList.add('theme-' + theme);
+
+    showToast('🎨 Visual theme updated to ' + select.options[select.selectedIndex].text + '!', 'success');
+}
+
+function clearAppDataSetting() {
+    if (!confirm('⚠️ Are you sure you want to reset the app? This will clear your credentials, cart, and all custom APK settings.')) {
+        return;
+    }
+    localStorage.clear();
+    alert('App data successfully cleared! Restarting...');
+    window.location.href = 'login.html';
+}

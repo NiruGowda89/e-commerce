@@ -1,5 +1,17 @@
+// Load Theme preference immediately to avoid flash
+(function() {
+  const theme = localStorage.getItem('karunada_app_theme') || 'turquoise';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.className = (document.body.className || '') + ' theme-' + theme;
+    });
+  } else {
+    document.body.className = (document.body.className || '') + ' theme-' + theme;
+  }
+})();
+
 if (typeof API_URL === "undefined") {
-  window.API_URL = "https://e-commerce-1-ariz.onrender.com/api";
+  window.API_URL = localStorage.getItem('karunada_api_base') || "https://e-commerce-1-ariz.onrender.com/api";
 }
 var API_URL = window.API_URL;
 

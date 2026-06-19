@@ -1,7 +1,9 @@
 // ─── API Configuration ────────────────────────────────────────────────────────
-var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:8080/api'
-    : 'https://e-commerce-1-ariz.onrender.com/api';
+var API_BASE = localStorage.getItem('karunada_api_base') || (
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8080/api'
+        : 'https://e-commerce-1-ariz.onrender.com/api'
+);
 window.API_URL = API_BASE;
 window.API_BASE = API_BASE;
 

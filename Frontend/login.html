@@ -8,7 +8,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Login – Karunada Collection</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,12 +15,12 @@
       height: 100%;
       min-height: 100vh;
       min-height: -webkit-fill-available;
-      font-family: 'Segoe UI', 'Poppins', sans-serif;
-      background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #0f0c29 0%, #302b63 55%, #1a1a2e 100%);
       overflow-x: hidden;
     }
 
-    /* ── Full-screen mobile app shell ── */
+    /* ── Shell ── */
     .login-shell {
       min-height: 100vh;
       min-height: -webkit-fill-available;
@@ -29,501 +28,516 @@
       flex-direction: column;
     }
 
-    /* ── Compact mobile header (replaces heavy navbar in APK) ── */
+    /* ── Header ── */
     .login-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: env(safe-area-inset-top, 12px) 20px 12px;
-      padding-top: max(env(safe-area-inset-top), 12px);
-      background: rgba(0,0,0,0.25);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      padding: max(env(safe-area-inset-top), 14px) 20px 14px;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .login-header-brand {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #ffc107;
-      letter-spacing: 0.5px;
       text-decoration: none;
+      letter-spacing: 0.5px;
     }
     .login-header-brand:hover { color: #ffc107; text-decoration: none; }
-    .login-header-links { display: flex; gap: 12px; }
-    .login-header-links a {
+    .header-links { display: flex; gap: 10px; }
+    .header-links a {
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,0.65);
       text-decoration: none;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-      transition: background 0.2s;
+      border: 1px solid rgba(255,255,255,0.18);
     }
-    .login-header-links a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .header-links a:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-    /* ── Scrollable content area ── */
+    /* ── Scroll area ── */
     .login-scroll {
       flex: 1;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      padding: 24px 16px max(env(safe-area-inset-bottom), 24px);
+      padding: 32px 16px max(env(safe-area-inset-bottom), 32px);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    /* ── Auth card ── */
-    .auth-box {
+    /* ── Card ── */
+    .auth-card {
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       background: #fff;
-      border-radius: 20px;
+      border-radius: 24px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
       overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.45);
     }
 
-    /* ── Tabs ── */
-    .auth-tabs {
-      display: flex;
-      background: #f8f9fa;
-      border-bottom: 2px solid #e9ecef;
+    /* ── Card top accent bar ── */
+    .auth-card__bar {
+      height: 5px;
+      background: linear-gradient(90deg, #ffc107, #ff9800, #ffc107);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite linear;
     }
-    .auth-tab-btn {
-      flex: 1;
-      padding: 14px 8px;
-      background: none;
-      border: none;
-      color: #6c757d;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
     }
-    .auth-tab-btn.active { color: #ffc107; }
-    .auth-tab-btn.active::after {
-      content: '';
-      position: absolute;
-      bottom: -2px; left: 15%; right: 15%;
-      height: 3px;
-      background: #ffc107;
-      border-radius: 3px 3px 0 0;
-    }
-    .auth-tab-btn.admin-tab.active       { color: #e74c3c; }
-    .auth-tab-btn.admin-tab.active::after { background: #e74c3c; }
 
-    /* ── Form body ── */
-    .auth-body { padding: 28px 24px; }
+    /* ── Card body ── */
+    .auth-card__body { padding: 36px 32px 28px; }
 
-    /* Brand icon in form */
-    .auth-brand-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
+    /* Logo + title */
+    .auth-logo {
+      width: 60px; height: 60px;
+      border-radius: 18px;
       background: linear-gradient(135deg, #302b63, #0f3460);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      margin: 0 auto 16px;
-      box-shadow: 0 4px 16px rgba(48,43,99,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 18px;
+      box-shadow: 0 6px 20px rgba(48,43,99,0.35);
+    }
+    .auth-title {
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+    }
+    .auth-sub {
+      text-align: center;
+      font-size: 0.83rem;
+      color: #6b7280;
+      margin-bottom: 28px;
     }
 
-    .auth-title    { color: #1a1a2e; font-size: 1.25rem; font-weight: 800; margin-bottom: 4px; text-align: center; }
-    .auth-subtitle { color: #6b7280; font-size: 0.82rem; margin-bottom: 24px; text-align: center; }
+    /* ── Error / success msg ── */
+    .auth-msg {
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-msg--error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+    .auth-msg--success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; }
 
     /* ── Fields ── */
-    .field-group { margin-bottom: 16px; }
-    .field-group label {
+    .field { margin-bottom: 16px; }
+    .field label {
       display: block;
-      color: #374151;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
-      margin-bottom: 5px;
+      color: #374151;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
     }
-    .field-group input {
+    .field input {
       width: 100%;
-      padding: 13px 14px;
+      padding: 13px 16px;
       background: #f9fafb;
       border: 1.5px solid #e5e7eb;
-      border-radius: 10px;
-      color: #1a1a2e;
+      border-radius: 11px;
       font-size: 0.95rem;
-      transition: border 0.2s, background 0.2s;
+      color: #1a1a2e;
       outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
       -webkit-appearance: none;
       appearance: none;
     }
-    .field-group input::placeholder { color: #9ca3af; }
-    .field-group input:focus {
-      border-color: #ffc107;
+    .field input::placeholder { color: #9ca3af; }
+    .field input:focus {
+      border-color: #302b63;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(255,193,7,0.15);
-    }
-    #panelAdmin .field-group input:focus {
-      border-color: #e74c3c;
-      box-shadow: 0 0 0 3px rgba(231,76,60,0.12);
+      box-shadow: 0 0 0 3px rgba(48,43,99,0.1);
     }
 
-    /* ── Buttons ── */
-    .btn-auth {
+    /* ── Password wrapper with show/hide ── */
+    .field-pw { position: relative; }
+    .field-pw input { padding-right: 46px; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 1rem; color: #9ca3af;
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pw-toggle:hover { color: #374151; }
+
+    /* ── Primary button ── */
+    .btn-primary-auth {
       width: 100%;
       padding: 14px;
       border: none;
       border-radius: 12px;
+      background: linear-gradient(135deg, #302b63, #0f3460);
+      color: #fff;
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.2s;
-      margin-top: 6px;
       letter-spacing: 0.2px;
+      margin-top: 8px;
+      box-shadow: 0 4px 18px rgba(48,43,99,0.35);
+      transition: transform 0.15s, box-shadow 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-auth:active { transform: scale(0.98); }
-    .btn-login  { background: linear-gradient(135deg, #ffc107, #ff9800); color: #1a1a2e; box-shadow: 0 4px 16px rgba(255,193,7,0.35); }
-    .btn-signup { background: linear-gradient(135deg, #00b09b, #00c471); color: #fff;    box-shadow: 0 4px 16px rgba(0,176,155,0.35); }
-    .btn-admin  { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff;    box-shadow: 0 4px 16px rgba(192,57,43,0.35); }
+    .btn-primary-auth:hover  { box-shadow: 0 6px 24px rgba(48,43,99,0.45); transform: translateY(-1px); }
+    .btn-primary-auth:active { transform: scale(0.98); }
+    .btn-primary-auth:disabled { opacity: 0.65; transform: none; cursor: not-allowed; }
 
-    /* ── Messages ── */
-    .msg-box {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      margin-bottom: 14px;
-      display: none;
-      font-weight: 500;
-    }
-    .msg-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
-    .msg-success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; }
-
-    .switch-link {
-      text-align: center;
-      margin-top: 18px;
-      color: #6b7280;
-      font-size: 0.84rem;
-      line-height: 1.6;
-    }
-    .switch-link a { color: #ffc107; text-decoration: none; font-weight: 700; }
-    .switch-link a:hover { text-decoration: underline; }
-
-    /* ── Admin hint ── */
-    .hint-box {
-      background: #fef9e7;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      padding: 10px 14px;
-      margin-top: 14px;
-      color: #78350f;
+    /* ── Forgot link ── */
+    .forgot-link {
+      display: block;
+      text-align: right;
       font-size: 0.78rem;
+      color: #302b63;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+    .forgot-link:hover { text-decoration: underline; color: #302b63; }
+
+    /* ── Divider ── */
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+      color: #d1d5db; font-size: 0.78rem;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: #e5e7eb;
+    }
+
+    /* ── Register toggle ── */
+    .auth-toggle {
       text-align: center;
+      font-size: 0.84rem;
+      color: #6b7280;
+      margin-top: 16px;
     }
-    .hint-box code {
-      background: rgba(251,191,36,0.2);
-      padding: 1px 6px;
-      border-radius: 4px;
-      color: #92400e;
+    .auth-toggle a {
+      color: #302b63;
       font-weight: 700;
+      text-decoration: none;
     }
+    .auth-toggle a:hover { text-decoration: underline; }
 
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* Register fields — hidden by default */
+    .register-fields { display: none; }
 
-    /* ── Bottom safe area ── */
+    /* ── Support footer ── */
+    .auth-card__footer {
+      text-align: center;
+      padding: 14px 20px 18px;
+      background: #f9fafb;
+      border-top: 1px solid #f0f0f0;
+    }
+    .auth-card__footer a {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .auth-card__footer a:hover { color: #302b63; }
+
+    /* ── Footer text ── */
     .login-footer {
       text-align: center;
-      padding: 12px 16px max(env(safe-area-inset-bottom), 12px);
-      color: rgba(255,255,255,0.3);
-      font-size: 0.75rem;
+      padding: 14px 16px max(env(safe-area-inset-bottom), 14px);
+      color: rgba(255,255,255,0.25);
+      font-size: 0.74rem;
     }
 
-    /* ── Support link at bottom of card ── */
-    .support-row {
-      text-align: center;
-      padding: 12px 24px 20px;
-      border-top: 1px solid #f3f4f6;
-      background: #fafafa;
-    }
-    .support-row a {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.82rem;
-      color: #374151;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .support-row a:hover { color: #16a34a; }
+    /* ── Forgot password screen ── */
+    #forgotScreen { display: none; }
 
-    /* ── Mobile-first responsive tweaks ── */
-    @media (max-width: 480px) {
-      .login-scroll  { padding: 16px 12px max(env(safe-area-inset-bottom), 16px); align-items: flex-start; }
-      .auth-body     { padding: 22px 18px; }
-      .auth-title    { font-size: 1.1rem; }
-      .auth-brand-icon { width: 48px; height: 48px; font-size: 1.3rem; }
-      .auth-box      { border-radius: 16px; }
+    @media (max-width: 440px) {
+      .auth-card__body { padding: 28px 20px 20px; }
+      .auth-title { font-size: 1.15rem; }
     }
   </style>
 </head>
 <body>
 <div class="login-shell">
 
-  <!-- ── Compact header ── -->
+  <!-- Header -->
   <header class="login-header">
-    <a class="login-header-brand" href="index.html">🛍️ Karunada</a>
-    <div class="login-header-links">
+    <a class="login-header-brand" href="index.html">🛍️ Karunada Collection</a>
+    <div class="header-links">
       <a href="shop.html">Shop</a>
       <a href="cart.html">🛒 Cart</a>
     </div>
   </header>
 
-  <!-- ── Scrollable area ── -->
+  <!-- Scroll area -->
   <div class="login-scroll">
-    <div class="auth-box">
+    <div class="auth-card">
+      <div class="auth-card__bar"></div>
+      <div class="auth-card__body">
 
-      <!-- Tabs -->
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tabLogin"    onclick="switchTab('login')">Login</button>
-        <button class="auth-tab-btn"        id="tabRegister" onclick="switchTab('register')">Register</button>
-        <button class="auth-tab-btn admin-tab" id="tabAdmin" onclick="switchTab('admin')">Admin</button>
-      </div>
+        <!-- ── LOGO + TITLE ── -->
+        <div class="auth-logo" id="authLogo">🛍️</div>
+        <div class="auth-title" id="authTitle">Welcome back</div>
+        <div class="auth-sub"   id="authSub">Sign in to your account</div>
 
-      <div class="auth-body">
+        <!-- ── MESSAGE BOX ── -->
+        <div class="auth-msg auth-msg--error"   id="authErr"></div>
+        <div class="auth-msg auth-msg--success" id="authOk"></div>
 
-        <!-- ── LOGIN PANEL ── -->
-        <div class="tab-panel active" id="panelLogin">
-          <div class="auth-brand-icon">👋</div>
-          <div class="auth-title">Welcome back!</div>
-          <div class="auth-subtitle">Sign in to your account</div>
-          <div class="msg-box msg-error" id="loginErr"></div>
-          <form id="loginForm">
-            <div class="field-group">
-              <label>Email Address</label>
-              <input type="email" id="loginEmail" placeholder="you@example.com"
-                     autocomplete="email" inputmode="email">
-            </div>
-            <div class="field-group">
-              <label>Password</label>
-              <input type="password" id="loginPassword" placeholder="Your password"
-                     autocomplete="current-password">
-            </div>
-            <button type="submit" class="btn-auth btn-login">Sign In →</button>
-          </form>
-          <div class="switch-link">
-            New here? <a href="#" onclick="switchTab('register');return false;">Create an account</a>
-            &nbsp;·&nbsp;
-            <a href="#" onclick="switchTab('forgot');return false;">Forgot password?</a>
-          </div>
-        </div>
+        <!-- ── MAIN FORM ── -->
+        <form id="mainForm" autocomplete="on">
 
-        <!-- ── FORGOT PASSWORD PANEL ── -->
-        <div class="tab-panel" id="panelForgot">
-          <div class="auth-brand-icon">🔑</div>
-          <div class="auth-title">Reset Password</div>
-          <div class="auth-subtitle">Enter your registered email</div>
-          <div class="msg-box msg-error"   id="forgotErr"></div>
-          <div class="msg-box msg-success" id="forgotOk"></div>
-          <form id="forgotForm">
-            <div class="field-group">
-              <label>Email Address</label>
-              <input type="email" id="forgotEmail" placeholder="you@example.com" inputmode="email">
-            </div>
-            <button type="submit" class="btn-auth btn-login">Send Reset Link →</button>
-          </form>
-          <div class="switch-link">
-            <a href="#" onclick="switchTab('login');return false;">← Back to Login</a>
-          </div>
-        </div>
-
-        <!-- ── REGISTER PANEL ── -->
-        <div class="tab-panel" id="panelRegister">
-          <div class="auth-brand-icon">🎉</div>
-          <div class="auth-title">Create Account</div>
-          <div class="auth-subtitle">Join Karunada Collection today</div>
-          <div class="msg-box msg-error"   id="regErr"></div>
-          <div class="msg-box msg-success" id="regOk"></div>
-          <form id="registerForm">
-            <div class="field-group">
+          <!-- Register-only fields -->
+          <div class="register-fields" id="registerFields">
+            <div class="field">
               <label>Full Name</label>
               <input type="text" id="regName" placeholder="Your full name"
                      autocomplete="name" autocapitalize="words">
             </div>
-            <div class="field-group">
-              <label>Email Address</label>
-              <input type="email" id="regEmail" placeholder="you@example.com"
-                     autocomplete="email" inputmode="email">
-            </div>
-            <div class="field-group">
+            <div class="field">
               <label>Phone Number</label>
               <input type="tel" id="regPhone" placeholder="10-digit mobile"
-                     autocomplete="tel" inputmode="tel">
+                     inputmode="tel" autocomplete="tel">
             </div>
-            <div class="field-group">
-              <label>Password</label>
-              <input type="password" id="regPassword" placeholder="Min 6 characters"
-                     autocomplete="new-password">
+          </div>
+
+          <!-- Email -->
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="authEmail" placeholder="you@example.com"
+                   autocomplete="email" inputmode="email" required>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label>Password</label>
+            <div class="field-pw">
+              <input type="password" id="authPassword" placeholder="Enter your password"
+                     autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" id="pwToggle"
+                      onclick="togglePw()" tabindex="-1">👁</button>
             </div>
-            <div class="field-group">
+          </div>
+
+          <!-- Confirm password (register only) -->
+          <div class="register-fields" id="confirmFields">
+            <div class="field">
               <label>Confirm Password</label>
-              <input type="password" id="regConfirm" placeholder="Repeat password"
-                     autocomplete="new-password">
+              <div class="field-pw">
+                <input type="password" id="authConfirm" placeholder="Repeat password"
+                       autocomplete="new-password">
+              </div>
             </div>
-            <button type="submit" class="btn-auth btn-signup">Create Account →</button>
-          </form>
-          <div class="switch-link">
-            Already have an account? <a href="#" onclick="switchTab('login');return false;">Sign in</a>
+          </div>
+
+          <!-- Forgot link (login mode only) -->
+          <a href="#" class="forgot-link" id="forgotLink"
+             onclick="showForgot(); return false;"style="color: #007bff; text-decoration: underline; text-align: center;">Forgot password?</a>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-primary-auth" id="submitBtn">
+            Sign In →
+          </button>
+        </form>
+
+        <!-- Toggle login ↔ register -->
+        <div class="auth-toggle" id="authToggle">
+          New here?
+          <a href="#" onclick="setMode('register'); return false;">Create an account</a>
+        </div>
+
+        <!-- ── FORGOT PASSWORD ── -->
+        <div id="forgotScreen">
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="forgotEmail" placeholder="you@example.com" inputmode="email">
+          </div>
+          <button type="button" class="btn-primary-auth" onclick="submitForgot()">
+            Send Reset Link →
+          </button>
+          <div class="auth-toggle" style="margin-top:14px;">
+            <a href="#" onclick="setMode('login'); return false;">← Back to Sign In</a>
           </div>
         </div>
 
-        <!-- ── ADMIN PANEL ── -->
-        <div class="tab-panel" id="panelAdmin">
-          <div class="auth-brand-icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">🛡️</div>
-          <div class="auth-title">Admin Login</div>
-          <div class="auth-subtitle">Restricted access</div>
-          <div class="msg-box msg-error" id="adminErr"></div>
-          <form id="adminForm">
-            <div class="field-group">
-              <label>Admin Email</label>
-              <input type="email" id="adminEmail" placeholder="admin@example.com" inputmode="email">
-            </div>
-            <div class="field-group">
-              <label>Admin Password</label>
-              <input type="password" id="adminPassword" placeholder="Admin password">
-            </div>
-            <button type="submit" class="btn-auth btn-admin">Admin Sign In →</button>
-          </form>
-          <div class="hint-box">
-            Default: <code>admin@karunada.com</code> / <code>admin123</code>
-          </div>
-        </div>
+      </div><!-- /body -->
 
-      </div><!-- /auth-body -->
-
-      <!-- Support row at bottom of card -->
-      <div class="support-row">
-        <a href="tel:+917899648380">
-          <span>📞</span> Need help? Call +91 78996 48380
-        </a>
+      <!-- Support footer -->
+      <div class="auth-card__footer">
+        <a href="tel:9876543210">📞 Need help? 9876543210</a>
       </div>
-
-    </div><!-- /auth-box -->
+    </div><!-- /auth-card -->
   </div><!-- /login-scroll -->
 
   <div class="login-footer">&copy; 2026 Karunada Collection. All rights reserved.</div>
 
 </div><!-- /login-shell -->
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    // Redirect if already logged in
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof getCurrentUser === 'function' && getCurrentUser()) {
-        var user = getCurrentUser();
-        if (user.role === 'ADMIN') { window.location.href = 'admin.html'; return; }
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
-      }
+<script src="js/cart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  /* ── Current mode: 'login' | 'register' ── */
+  var _mode = 'login';
+
+  /* ── Redirect if already logged in ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof getCurrentUser === 'function' && getCurrentUser()) {
+      var u = getCurrentUser();
+      window.location.href = u.role === 'ADMIN' ? 'admin.html'
+        : (new URLSearchParams(window.location.search).get('redirect') || 'index.html');
+    }
+  });
+
+  /* ── Toggle password visibility ── */
+  function togglePw() {
+    var inp = document.getElementById('authPassword');
+    var btn = document.getElementById('pwToggle');
+    if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁';  }
+  }
+
+  /* ── Switch between login and register ── */
+  function setMode(mode) {
+    _mode = mode;
+    var isReg = (mode === 'register');
+
+    /* Show/hide register-only fields */
+    document.querySelectorAll('.register-fields').forEach(function (el) {
+      el.style.display = isReg ? 'block' : 'none';
     });
 
-    // ── Tab switching ──
-    function switchTab(tab) {
-      ['login','register','forgot','admin'].forEach(function(t) {
-        var p = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (p) p.classList.toggle('active', t === tab);
-      });
-      ['Login','Register','Admin'].forEach(function(t) {
-        var b = document.getElementById('tab' + t);
-        if (b) b.classList.remove('active');
-      });
-      var activeTab = { login:'Login', register:'Register', admin:'Admin', forgot:'Login' }[tab];
-      if (activeTab) {
-        var el = document.getElementById('tab' + activeTab);
-        if (el) el.classList.add('active');
-      }
-    }
+    /* Forgot link only visible in login mode */
+    document.getElementById('forgotLink').style.display = isReg ? 'none' : 'block';
 
-    function showMsg(id, msg) { var e=document.getElementById(id); if(e){e.textContent=msg;e.style.display='block';} }
-    function hideMsg(id)      { var e=document.getElementById(id); if(e) e.style.display='none'; }
+    /* Autocomplete hint */
+    document.getElementById('authPassword').autocomplete = isReg ? 'new-password' : 'current-password';
 
-    // ── Login ──
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      hideMsg('loginErr');
-      var email = document.getElementById('loginEmail').value.trim();
-      var pass  = document.getElementById('loginPassword').value;
-      if (!email || !pass) { showMsg('loginErr','Please fill in all fields.'); return; }
-      var btn = e.target.querySelector('button[type=submit]');
+    /* Labels / button */
+    document.getElementById('authTitle').textContent  = isReg ? 'Create Account' : 'Welcome back';
+    document.getElementById('authSub').textContent    = isReg ? 'Join Karunada Collection today' : 'Sign in to your account';
+    document.getElementById('submitBtn').textContent  = isReg ? 'Create Account →' : 'Sign In →';
+    document.getElementById('authLogo').textContent   = isReg ? '🎉' : '🛍️';
+    document.getElementById('authToggle').innerHTML   = isReg
+      ? 'Already have an account? <a href="#" onclick="setMode(\'login\');return false;">Sign in</a>'
+      : 'New here? <a href="#" onclick="setMode(\'register\');return false;">Create an account</a>';
+
+    /* Hide forgot screen, show main form */
+    document.getElementById('forgotScreen').style.display = 'none';
+    document.getElementById('mainForm').style.display     = 'block';
+    document.getElementById('authToggle').style.display   = 'block';
+    document.getElementById('forgotLink').style.display   = isReg ? 'none' : 'block';
+
+    clearMsgs();
+  }
+
+  function showForgot() {
+    document.getElementById('mainForm').style.display     = 'none';
+    document.getElementById('authToggle').style.display   = 'none';
+    document.getElementById('forgotScreen').style.display = 'block';
+    document.getElementById('authTitle').textContent      = 'Reset Password';
+    document.getElementById('authSub').textContent        = 'Enter your registered email';
+    document.getElementById('authLogo').textContent       = '🔑';
+    clearMsgs();
+  }
+
+  /* ── Message helpers ── */
+  function showErr(msg) {
+    var e = document.getElementById('authErr');
+    e.textContent = msg; e.style.display = 'block';
+    document.getElementById('authOk').style.display = 'none';
+  }
+  function showOk(msg) {
+    var e = document.getElementById('authOk');
+    e.textContent = msg; e.style.display = 'block';
+    document.getElementById('authErr').style.display = 'none';
+  }
+  function clearMsgs() {
+    document.getElementById('authErr').style.display = 'none';
+    document.getElementById('authOk').style.display  = 'none';
+  }
+
+  /* ── MAIN FORM SUBMIT ── */
+  document.getElementById('mainForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearMsgs();
+
+    var email = document.getElementById('authEmail').value.trim();
+    var pass  = document.getElementById('authPassword').value;
+    var btn   = document.getElementById('submitBtn');
+
+    if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+
+    if (_mode === 'register') {
+      /* ── REGISTER flow ── */
+      var name  = document.getElementById('regName').value.trim();
+      var phone = document.getElementById('regPhone').value.trim();
+      var conf  = document.getElementById('authConfirm').value;
+
+      if (!name)              { showErr('Please enter your full name.'); return; }
+      if (!/^\S+@\S+\.\S+$/.test(email)) { showErr('Enter a valid email address.'); return; }
+      if (phone.length < 10) { showErr('Enter a valid 10-digit phone number.'); return; }
+      if (pass.length < 6)   { showErr('Password must be at least 6 characters.'); return; }
+      if (pass !== conf)     { showErr('Passwords do not match.'); return; }
+
+      btn.textContent = 'Creating account…'; btn.disabled = true;
+      var result = await registerUser(name, email, phone, pass);
+      btn.textContent = 'Create Account →'; btn.disabled = false;
+
+      if (!result.ok) { showErr(result.msg); return; }
+      showOk('✅ Account created! Redirecting…');
+      setTimeout(function () {
+        window.location.href =
+          new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      }, 1000);
+
+    } else {
+      /* ── LOGIN flow — auto-detects admin vs user ── */
       btn.textContent = 'Signing in…'; btn.disabled = true;
       var result = await loginUser(email, pass);
       btn.textContent = 'Sign In →'; btn.disabled = false;
-      if (!result.ok) { showMsg('loginErr', result.msg); return; }
-      if (result.user.role === 'ADMIN') { window.location.href = 'admin.html'; return; }
-      var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-      window.location.href = redirect;
-    });
 
-    // ── Register ──
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      hideMsg('regErr'); hideMsg('regOk');
-      var name  = document.getElementById('regName').value.trim();
-      var email = document.getElementById('regEmail').value.trim();
-      var phone = document.getElementById('regPhone').value.trim();
-      var pass  = document.getElementById('regPassword').value;
-      var conf  = document.getElementById('regConfirm').value;
-      if (!name||!email||!phone||!pass) { showMsg('regErr','All fields are required.'); return; }
-      if (!/^\S+@\S+\.\S+$/.test(email)) { showMsg('regErr','Enter a valid email.'); return; }
-      if (phone.length < 10)              { showMsg('regErr','Enter a valid 10-digit phone.'); return; }
-      if (pass.length < 6)                { showMsg('regErr','Password must be at least 6 characters.'); return; }
-      if (pass !== conf)                  { showMsg('regErr','Passwords do not match.'); return; }
-      var btn = e.target.querySelector('button[type=submit]');
-      btn.textContent = 'Creating…'; btn.disabled = true;
-      var result = await registerUser(name, email, phone, pass);
-      btn.textContent = 'Create Account →'; btn.disabled = false;
-      if (!result.ok) { showMsg('regErr', result.msg); return; }
-      showMsg('regOk','✅ Account created! Redirecting…');
-      setTimeout(function() {
-        var redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-        window.location.href = redirect;
-      }, 1200);
-    });
+      if (!result.ok) { showErr(result.msg || 'Invalid email or password.'); return; }
 
-    // ── Admin login ──
-    document.getElementById('adminForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      hideMsg('adminErr');
-      var email = document.getElementById('adminEmail').value.trim();
-      var pass  = document.getElementById('adminPassword').value;
-      if (!email || !pass) { showMsg('adminErr','Please fill in all fields.'); return; }
-      var btn = e.target.querySelector('button[type=submit]');
-      btn.textContent = 'Signing in…'; btn.disabled = true;
-      var result = await loginUser(email, pass);
-      btn.textContent = 'Admin Sign In →'; btn.disabled = false;
-      if (!result.ok) { showMsg('adminErr', result.msg); return; }
-      if (result.user.role !== 'ADMIN') { showMsg('adminErr','Access denied. Not an admin account.'); return; }
-      window.location.href = 'admin.html';
-    });
+      /* Route by role — admin goes to dashboard, user goes to home/redirect */
+      if (result.user.role === 'ADMIN') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href =
+          new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      }
+    }
+  });
 
-    // ── Forgot Password ──
-    document.getElementById('forgotForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      hideMsg('forgotErr'); hideMsg('forgotOk');
-      var email = document.getElementById('forgotEmail').value.trim();
-      if (!email) { showMsg('forgotErr','Please enter your email.'); return; }
-      fetch(API_URL + '/auth/forgot-password', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email: email })
-      }).then(function(r) {
-        if (r.ok) showMsg('forgotOk','✅ Reset link sent to ' + email + '. Check your inbox.');
-        else      showMsg('forgotErr','❌ No account found with this email.');
-      }).catch(function() {
-        showMsg('forgotErr','❌ Could not reach server. Try again later.');
-      });
+  /* ── FORGOT PASSWORD ── */
+  function submitForgot() {
+    clearMsgs();
+    var email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { showErr('Please enter your email address.'); return; }
+
+    fetch((typeof API_URL !== 'undefined' ? API_URL : 'https://e-commerce-1-ariz.onrender.com/api')
+          + '/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    }).then(function (r) {
+      if (r.ok) showOk('✅ Reset link sent to ' + email + '. Check your inbox.');
+      else      showErr('❌ No account found with this email.');
+    }).catch(function () {
+      showErr('❌ Could not reach server. Please try again.');
     });
-  </script>
+  }
+</script>
 </body>
 </html>
