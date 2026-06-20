@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Karunada Collection – Page Not Found</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    html, body { background: var(--bg-body); color: var(--text-primary); overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* ── Navbar ── */
+    .kc-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #0d1117;
+      border-bottom: 1px solid var(--border);
+      padding: calc(env(safe-area-inset-top,0px) + 0px) 0 0;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.6);
+    }
+    .kc-nav-inner {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 20px; height: 60px; max-width: 1200px; margin: 0 auto;
+    }
+    .kc-logo {
+      font-weight: 800; font-size: 1.2rem; color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .kc-logo-badge {
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      color: #fff; font-size: 0.6rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .kc-nav-links {
+      display: flex; align-items: center; gap: 4px;
+      margin: 0 auto; padding: 0; list-style: none;
+    }
+    .kc-nav-links a {
+      color: var(--text-secondary); font-size: 0.82rem; font-weight: 500;
+      padding: 6px 14px; border-radius: 10px; text-decoration: none;
+      transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .kc-nav-links a:hover {
+      color: var(--text-primary); background: var(--accent-light);
+    }
+    .kc-nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .kc-icon-btn {
+      height: 36px; padding: 0 12px; border-radius: 10px;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      color: var(--text-secondary); display: flex; align-items: center;
+      justify-content: center; gap: 6px; text-decoration: none; position: relative;
+      transition: all 0.2s; font-size: 0.82rem; font-weight: 500; cursor: pointer;
+    }
+    .kc-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-glow); }
+    .kc-icon-btn .kc-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: var(--accent); color: #fff;
+      font-size: 0.55rem; font-weight: 800;
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--bg-body);
+    }
+    
+    @media (max-width: 767px) {
+      .kc-nav-links { display: none; }
+      .kc-logo { font-size: 1rem; }
+      .kc-icon-btn .btn-label { display: none; }
+      .kc-icon-btn { padding: 0 10px; }
+    }
+
+    /* ── Error Card ── */
+    .error-card {
+      position: relative;
+      background: rgba(22, 27, 34, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      max-width: 550px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .error-glow {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .error-emoji {
+      font-size: 5rem;
+      filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+    }
+    .error-title {
+      font-size: 5rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+      line-height: 1;
+    }
+    .error-subtitle {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .error-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    /* ── Animation ── */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+      display: inline-block;
+    }
+    
+    .error-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      border-radius: 50px;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .error-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+      color: #fff;
+    }
+    
+    /* ── Footer ── */
+    .kc-footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 20px);
+      text-align: center;
+      margin-top: auto;
+    }
+    .kc-footer p { font-size: 0.82rem; color: var(--text-secondary); margin: 0; }
+    .kc-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .kc-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="kc-nav">
+    <div class="kc-nav-inner">
+      <a class="kc-logo" href="/">
+        Karunada collection
+        <span class="kc-logo-badge">NEW</span>
+      </a>
+
+      <ul class="kc-nav-links">
+        <li><a href="/"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a></li>
+        <li><a href="/shop"><span class="nav-icon">🛍️</span><span class="nav-label">Shop</span></a></li>
+        <li><a href="/new-arrivals"><span class="nav-icon">✨</span><span class="nav-label">New Arrivals</span></a></li>
+        <li><a href="/offers"><span class="nav-icon">🏷️</span><span class="nav-label">Offers</span></a></li>
+      </ul>
+
+      <div class="kc-nav-actions">
+        <!-- Auth / Profile -->
+        <a class="kc-icon-btn" href="/account" title="Account" id="authNavBtn">
+          <span class="btn-icon">👤</span><span class="btn-label">Account</span>
+        </a>
+
+        <!-- Cart -->
+        <a class="kc-icon-btn cart-icon-link" href="/cart" title="Cart">
+          <span class="btn-icon">🛒</span><span class="btn-label">Cart</span>
+          <span id="cartCount" class="kc-badge"></span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ── -->
+  <div class="container my-5 text-center d-flex align-items-center justify-content-center" style="min-height: 55vh; flex: 1;">
+    <div class="error-card p-5">
+      <div class="error-glow"></div>
+      <div class="error-emoji animate-float">🛸</div>
+      <h1 class="error-title mt-4">404</h1>
+      <h2 class="error-subtitle mb-3">Lost in Space?</h2>
+      <p class="error-text mb-4">The page you are looking for has drifted away. It might have been removed, renamed, or is temporarily unavailable.</p>
+      <a href="/" class="btn btn-primary error-btn px-5 py-3">Back to Safe Orbit</a>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer class="kc-footer">
+    <p>© 2026 Karunada Collection &nbsp;|&nbsp;
+      <a href="/shop">Shop</a> &nbsp;|&nbsp;
+      <a href="/cart">Cart</a> &nbsp;|&nbsp;
+      <a href="/account">Account</a> &nbsp;|&nbsp;
+      <a href="/login?tab=admin">Admin</a>
+    </p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/cart.js"></script>
+  <script>
+    // Load cart counter
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof updateCartBadge === 'function') {
+        updateCartBadge();
+      } else {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const cartCountEl = document.getElementById('cartCount');
+        if (cartCountEl) {
+          if (totalQty > 0) {
+            cartCountEl.textContent = totalQty;
+            cartCountEl.style.display = 'flex';
+          } else {
+            cartCountEl.style.display = 'none';
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

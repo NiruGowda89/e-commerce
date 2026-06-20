@@ -6,6 +6,85 @@
   <title>Product - Karunada Collection</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Product gallery image container: explicit height so the image is visible ── */
+    .pd-main-img-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      min-height: 320px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .pd-main-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.18s ease;
+      cursor: zoom-in;
+    }
+    /* Thumbnail strip */
+    .pd-thumbs {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .pd-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      transition: border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .pd-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pd-thumb.active, .pd-thumb:hover {
+      border-color: #6366f1;
+      box-shadow: 0 0 10px rgba(99,102,241,0.4);
+    }
+    /* Loader */
+    #pageLoader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+    }
+    .pd-loader__spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: pd-spin 0.75s linear infinite;
+    }
+    @keyframes pd-spin { to { transform: rotate(360deg); } }
+    .pd-loader__text {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    /* Gallery layout fix */
+    .pd-gallery-sticky {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  </style>
 </head>
 <body>
 
@@ -44,7 +123,10 @@
     </div>
   </nav>
 
-  <!-- ── Loading Skeleton ── -->ading product…</p>
+  <!-- ── Loading Spinner ── -->
+  <div id="pageLoader">
+    <div class="pd-loader__spinner"></div>
+    <p class="pd-loader__text">Loading product…</p>
   </div>
 
   <!-- ── Main Content (hidden until loaded) ── -->

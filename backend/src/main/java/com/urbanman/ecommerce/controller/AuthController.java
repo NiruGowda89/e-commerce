@@ -14,11 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {
-        "https://e-commerce-1-ariz.onrender.com",
-        "https://e-commerce-two-rouge-62.vercel.app",
-        "https://e-commerce-1ttw.vercel.app"
-})
 public class AuthController {
 
     private final UserRepository userRepo;
