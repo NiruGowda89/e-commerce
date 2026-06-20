@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -82,7 +81,7 @@ public class AuthController {
             String tempPass = "Reset@" + (int)(1000 + Math.random() * 9000);
             user.setPassword(passwordEncoder.encode(tempPass));
             userRepo.save(user);
-            emailService.sendPasswordReset(Objects.requireNonNull(email), user.getName() != null ? user.getName() : "Customer", tempPass);
+            emailService.sendPasswordReset(email, user.getName() != null ? user.getName() : "Customer", tempPass);
             return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
         }).orElse(ResponseEntity.badRequest().body(Map.of("error", "No account found with this email")));
     }

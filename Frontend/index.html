@@ -34,28 +34,33 @@
       text-transform: uppercase;
     }
     .kc-nav-links {
-      display: flex; align-items: center; gap: 2px;
+      display: flex; align-items: center; gap: 4px;
       margin: 0 auto; padding: 0; list-style: none;
     }
     .kc-nav-links a {
-      color: var(--text-secondary); font-size: 0.88rem; font-weight: 500;
-      padding: 6px 14px; border-radius: 8px; text-decoration: none;
-      transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+      color: var(--text-secondary); font-size: 0.82rem; font-weight: 500;
+      padding: 6px 14px; border-radius: 10px; text-decoration: none;
+      transition: all 0.2s; display: flex; align-items: center; gap: 6px;
     }
+    .kc-nav-links a .nav-icon { font-size: 1rem; line-height: 1; }
+    .kc-nav-links a .nav-label { line-height: 1; }
     .kc-nav-links a:hover, .kc-nav-links a.active {
       color: var(--text-primary); background: var(--accent-light);
     }
-    .kc-nav-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .kc-nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .kc-icon-btn {
-      width: 38px; height: 38px; border-radius: 10px;
+      height: 36px; padding: 0 12px; border-radius: 10px;
       background: var(--bg-elevated); border: 1px solid var(--border);
       color: var(--text-secondary); display: flex; align-items: center;
-      justify-content: center; text-decoration: none; position: relative;
-      transition: all 0.2s; font-size: 1.05rem; cursor: pointer;
+      justify-content: center; gap: 6px; text-decoration: none; position: relative;
+      transition: all 0.2s; font-size: 0.82rem; font-weight: 500; cursor: pointer;
+      white-space: nowrap;
     }
-    .kc-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .kc-icon-btn .btn-icon { font-size: 1rem; line-height: 1; }
+    .kc-icon-btn .btn-label { line-height: 1; }
+    .kc-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-glow); }
     .kc-icon-btn .kc-badge {
-      position: absolute; top: -4px; right: -4px;
+      position: absolute; top: -5px; right: -5px;
       background: var(--accent); color: #fff;
       font-size: 0.55rem; font-weight: 800;
       width: 16px; height: 16px; border-radius: 50%;
@@ -65,6 +70,8 @@
     @media (max-width: 767px) {
       .kc-nav-links { display: none; }
       .kc-logo { font-size: 1rem; }
+      .kc-icon-btn .btn-label { display: none; }
+      .kc-icon-btn { padding: 0 10px; }
     }
 
     /* ══════════════════ STATS BAR ══════════════════ */
@@ -328,21 +335,26 @@
       </a>
 
       <ul class="kc-nav-links">
-        <li><a href="shop.html" class="active">Shop ▾</a></li>
-        <li><a href="new-arrivals.html">New Arrivals</a></li>
-        <li><a href="offers.html">Offers ▾</a></li>
+        <li><a href="index.html"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a></li>
+        <li><a href="shop.html"><span class="nav-icon">🛍️</span><span class="nav-label">Shop</span></a></li>
+        <li><a href="new-arrivals.html"><span class="nav-icon">✨</span><span class="nav-label">New Arrivals</span></a></li>
+        <li><a href="offers.html"><span class="nav-icon">🏷️</span><span class="nav-label">Offers</span></a></li>
       </ul>
 
       <div class="kc-nav-actions">
         <!-- Search -->
-        <button class="kc-icon-btn" id="searchToggleBtn" onclick="document.getElementById('mobileSearchBar').classList.toggle('d-flex')" title="Search">🔍</button>
+        <button class="kc-icon-btn" id="searchToggleBtn" onclick="document.getElementById('mobileSearchBar').classList.toggle('d-flex')" title="Search">
+          <span class="btn-icon">🔍</span><span class="btn-label">Search</span>
+        </button>
 
         <!-- Auth / Profile -->
-        <a class="kc-icon-btn" href="account.html" title="Account" id="authNavBtn">👤</a>
+        <a class="kc-icon-btn" href="account.html" title="Account" id="authNavBtn">
+          <span class="btn-icon">👤</span><span class="btn-label">Account</span>
+        </a>
 
         <!-- Cart -->
         <a class="kc-icon-btn cart-icon-link" href="cart.html" title="Cart">
-          🛒
+          <span class="btn-icon">🛒</span><span class="btn-label">Cart</span>
           <span id="cartCount" class="kc-badge"></span>
         </a>
       </div>
@@ -561,17 +573,31 @@
         </a>`;
     }
 
-    /* ── Offline empty state ── */
-    function offlineState(railId) {
+    /* ── Fallback demo products when backend is offline ── */
+    const DEMO_PRODUCTS = [
+      { productId: 'd1', productName: 'Classic Black Tee', category: 'T-Shirts', price: 499, imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&q=80' },
+      { productId: 'd2', productName: 'Slim Fit Chinos', category: 'Trousers', price: 1199, imageUrl: 'https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?w=400&q=80' },
+      { productId: 'd3', productName: 'Cargo Shorts', category: 'Shorts', price: 799, imageUrl: 'https://images.unsplash.com/photo-1591195853828-11db59a44f43?w=400&q=80' },
+      { productId: 'd4', productName: 'Striped Polo', category: 'Polo', price: 699, imageUrl: 'https://images.unsplash.com/photo-1625910513473-4726a2d9dcd9?w=400&q=80' },
+      { productId: 'd5', productName: 'Denim Jacket', category: 'Jackets', price: 2199, imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=400&q=80' },
+      { productId: 'd6', productName: 'White Linen Shirt', category: 'Shirts', price: 899, imageUrl: 'https://images.unsplash.com/photo-1602810316498-ab67cf68c8e1?w=400&q=80' },
+    ];
+
+    /* ── Show fallback cards with a subtle offline badge ── */
+    function showFallbackProducts(railId, reverse) {
       const el = document.getElementById(railId);
       if (!el) return;
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;gap:14px;padding:24px 4px;color:var(--text-muted);font-size:0.84rem;">
-          <span style="font-size:1.6rem;">🌐</span>
-          <span>Products loading from server…<br>
-            <a href="#" onclick="loadAll();return false;" style="color:var(--accent);font-weight:600;">Retry</a>
-          </span>
-        </div>`;
+      const products = reverse ? [...DEMO_PRODUCTS].reverse() : DEMO_PRODUCTS;
+      el.innerHTML = products.map(p => `
+        <a class="pk-card" href="shop.html" title="${p.productName}" style="position:relative;">
+          <span style="position:absolute;top:8px;left:8px;background:rgba(99,102,241,0.85);color:#fff;font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.5px;backdrop-filter:blur(4px);">DEMO</span>
+          <img class="pk-card-img" src="${p.imageUrl}" alt="${p.productName}" onerror="this.style.display='none'">
+          <div class="pk-card-body">
+            <div class="pk-card-cat">${p.category}</div>
+            <div class="pk-card-name">${p.productName}</div>
+            <div class="pk-card-price">₹${Number(p.price).toLocaleString('en-IN')}</div>
+          </div>
+        </a>`).join('');
     }
 
     /* ── Load all products ── */
@@ -600,13 +626,15 @@
           featRail.innerHTML = bp.slice(0, 10).map(buildCard).join('');
           newRail.innerHTML  = [...bp].reverse().slice(0, 10).map(buildCard).join('');
         } else {
-          offlineState('featuredRail');
-          offlineState('newRail');
+          showFallbackProducts('featuredRail', false);
+          showFallbackProducts('newRail', true);
+          setTimeout(loadAll, 8000); // silent retry
         }
       } catch (e) {
-        console.warn('Backend offline — cannot load products', e);
-        offlineState('featuredRail');
-        offlineState('newRail');
+        console.warn('Backend offline — showing demo products', e);
+        showFallbackProducts('featuredRail', false);
+        showFallbackProducts('newRail', true);
+        setTimeout(loadAll, 8000); // silent retry every 8s until backend wakes
       }
 
       // Try fetch order count for stats bar

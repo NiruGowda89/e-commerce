@@ -163,3 +163,55 @@ function refreshAuthNav() {
 }
 
 document.addEventListener('DOMContentLoaded', refreshAuthNav);
+
+// ─── Mobile WebView Back Button Interception ───────────────────────────────
+(function() {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  if (!isMobile) return;
+
+  const currentPath = (window.location.pathname.split('/').pop() || 'index.html') + window.location.search + window.location.hash;
+
+  // Get current navigation stack
+  let navStack = [];
+  try {
+    navStack = JSON.parse(sessionStorage.getItem('karunada_nav_stack') || '[]');
+  } catch(e) { navStack = []; }
+
+  // Push current page to stack if it's not the same as the last one
+  if (navStack.length === 0 || navStack[navStack.length - 1] !== currentPath) {
+    // If we returned to a previous page in the stack, trim the stack to that point
+    const idx = navStack.indexOf(currentPath);
+    if (idx !== -1) {
+      navStack = navStack.slice(0, idx + 1);
+    } else {
+      navStack.push(currentPath);
+    }
+    sessionStorage.setItem('karunada_nav_stack', JSON.stringify(navStack));
+  }
+
+  // Trap back button on all pages except homepage (index.html)
+  const isHomepage = currentPath.startsWith('index.html') || currentPath === '';
+  if (isHomepage) return;
+
+  // Push dummy state to capture back button
+  window.history.pushState({ mobileBackTrap: true }, '', window.location.href);
+
+  window.addEventListener('popstate', function(event) {
+    let stack = [];
+    try {
+      stack = JSON.parse(sessionStorage.getItem('karunada_nav_stack') || '[]');
+    } catch(e) { stack = []; }
+
+    if (stack.length > 1) {
+      // Remove current page from stack
+      stack.pop();
+      // Get previous page
+      const prevPage = stack[stack.length - 1];
+      sessionStorage.setItem('karunada_nav_stack', JSON.stringify(stack));
+      window.location.href = prevPage;
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+})();
+
