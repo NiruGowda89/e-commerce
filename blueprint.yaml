@@ -1,5 +1,5 @@
 services:
-  - type: private
+  - type: pserv
     name: mysql
     env: docker
     plan: free
