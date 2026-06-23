@@ -10,15 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Register all routes
-  Router.register('home',       screenHome);
-  Router.register('shop',       screenShop);
-  Router.register('product',    screenProduct);
-  Router.register('cart',       screenCart);
-  Router.register('checkout',   screenCheckout);
-  Router.register('favourites', screenFavourites);
-  Router.register('account',    screenAccount);
-  Router.register('orders',     screenOrders);
-  Router.register('search',     screenSearch);
+  Router.register('home',        screenHome);
+  Router.register('shop',        screenShop);
+  Router.register('product',     screenProduct);
+  Router.register('cart',        screenCart);
+  Router.register('checkout',    screenCheckout);
+  Router.register('favourites',  screenFavourites);
+  Router.register('account',     screenAccount);
+  Router.register('orders',      screenOrders);
+  Router.register('search',      screenSearch);
+  Router.register('offers',      screenOffers);
+  Router.register('newarrivals', screenNewArrivals);
 
   // Listen for state changes to keep badge updated
   AppState.on('cart',  () => updateCartBadge());
@@ -56,17 +58,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Home
 window.kcInit_home = async function() {
+  let products;
   try {
-    let products = await apiGetProducts();
+    products = await apiGetProducts();
     if (!products || products.length === 0) throw new Error('empty');
-    renderFeaturedRail(products.slice(0, 10));
-    renderNewArrivalsGrid([...products].reverse().slice(0, 6));
   } catch(e) {
+    products = DEMO_PRODUCTS;
     const notice = document.getElementById('demo-notice');
     if (notice) notice.style.display = 'flex';
-    renderFeaturedRail(DEMO_PRODUCTS);
-    renderNewArrivalsGrid([...DEMO_PRODUCTS].reverse());
   }
+  renderFeaturedRail(products.slice(0, 10));
+  const newItems = products.filter(p => p.isNew || p.category === 'New Collection');
+  renderNewArrivalsGrid(newItems.length ? newItems : [...products].reverse().slice(0, 6));
 };
 
 function renderFeaturedRail(products) {
@@ -108,34 +111,28 @@ async function loadShopGrid(q, cat) {
   const grid = document.getElementById('shop-grid');
   if (!grid) return;
   grid.innerHTML = skeletonGrid(6);
+  let products;
   try {
-    let products = await apiGetProducts();
+    products = await apiGetProducts();
     if (!products || products.length === 0) products = DEMO_PRODUCTS;
-    // Filter by category
-    if (cat && cat !== 'All') {
-      products = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase());
-    }
-    // Filter by search query
-    if (q) {
-      const ql = q.toLowerCase();
-      products = products.filter(p =>
-        (p.productName || p.name || '').toLowerCase().includes(ql) ||
-        (p.category || '').toLowerCase().includes(ql)
-      );
-    }
-    if (products.length === 0) {
-      grid.innerHTML = emptyState('🔍', 'No products found',
-        'Try a different search term or category.');
-    } else {
-      grid.innerHTML = products.map(p => productCardGrid(p)).join('');
-    }
   } catch(e) {
-    let products = DEMO_PRODUCTS;
-    if (cat !== 'All') products = products.filter(p => p.category === cat);
-    if (q) products = products.filter(p => p.productName.toLowerCase().includes(q.toLowerCase()));
-    grid.innerHTML = products.length
-      ? products.map(p => productCardGrid(p)).join('')
-      : emptyState('🔍', 'No products found', 'Try a different term.');
+    products = DEMO_PRODUCTS;
+  }
+  if (cat && cat !== 'All') {
+    products = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase());
+  }
+  if (q) {
+    const ql = q.toLowerCase();
+    products = products.filter(p =>
+      (p.productName || p.name || '').toLowerCase().includes(ql) ||
+      (p.category || '').toLowerCase().includes(ql)
+    );
+  }
+  if (products.length === 0) {
+    grid.innerHTML = emptyState('🔍', 'No products found',
+      'Try a different search term or category.');
+  } else {
+    grid.innerHTML = products.map(p => productCardGrid(p)).join('');
   }
 }
 
@@ -171,15 +168,17 @@ window.kcInit_product = async function(params = {}) {
       p = DEMO_PRODUCTS.find(d => d.productId === id) || DEMO_PRODUCTS[0];
     }
 
-    const pid   = p.productId || p.id || id;
-    const name  = p.productName || p.name || 'Product';
-    const cat   = p.category || '';
-    const img   = resolveImgUrl(p.imageUrl || p.image || '');
-    const price = p.price || 0;
-    const desc  = p.description || 'Premium quality men\'s fashion product.';
-    const sizes = p.sizes || ['S','M','L','XL'];
-    const colors= p.colors || [];
-    const isFav = AppState.isFav(String(pid));
+    const pid    = p.productId || p.id || id;
+    const name   = p.productName || p.name || 'Product';
+    const cat    = p.category || '';
+    const img    = resolveImgUrl(p.imageUrl || p.image || '');
+    const price  = p.price || 0;
+    const desc   = p.description || 'Premium quality men\'s fashion product.';
+    const sizes  = p.sizes || ['S','M','L','XL'];
+    const colors = p.colors || [];
+    const isFav  = AppState.isFav(String(pid));
+    const disc   = p.discount || (p.originalPrice ? Math.round((1 - p.price / p.originalPrice) * 100) : 0);
+    const origP  = p.originalPrice || (disc ? Math.round(p.price / (1 - disc / 100)) : null);
 
     // Update header title
     const hdrTitle = document.getElementById('hdr-title');
@@ -190,12 +189,16 @@ window.kcInit_product = async function(params = {}) {
         ${img
           ? `<img src="${img}" alt="${name}">`
           : `<div class="pd-img-placeholder">👕</div>`}
+        ${disc > 0 ? `<span class="pd-discount-badge">${disc}% OFF</span>` : ''}
+        ${p.isNew ? `<span class="pd-new-badge">NEW</span>` : ''}
       </div>
       <div class="pd-body">
         <div class="pd-cat">${cat}</div>
         <div class="pd-name">${name}</div>
         <div class="pd-price-row">
           <span class="pd-price">${fmtPrice(price)}</span>
+          ${origP ? `<span class="pd-price-old">${fmtPrice(origP)}</span>` : ''}
+          ${disc > 0 ? `<span class="pd-off">${disc}% OFF</span>` : ''}
         </div>
         <div class="pd-desc">${desc}</div>
 

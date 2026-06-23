@@ -8,15 +8,17 @@ const Router = (() => {
 
   // ── Header config per screen ────────────────────────────────────────────────
   const HEADER_CFG = {
-    home:       { title: 'Karunada',    back: false, search: true,  cart: true  },
-    shop:       { title: 'Shop',        back: false, search: true,  cart: true  },
-    cart:       { title: 'My Cart',     back: false, search: false, cart: false },
-    favourites: { title: 'Favourites',  back: false, search: false, cart: true  },
-    account:    { title: 'Account',     back: false, search: false, cart: true  },
-    product:    { title: '',            back: true,  search: false, cart: true  },
-    checkout:   { title: 'Checkout',    back: true,  search: false, cart: false },
-    orders:     { title: 'My Orders',   back: true,  search: false, cart: true  },
-    search:     { title: 'Search',      back: true,  search: false, cart: true  },
+    home:        { title: 'Karunada',     back: false, search: true,  cart: true  },
+    shop:        { title: 'Shop',         back: false, search: true,  cart: true  },
+    cart:        { title: 'My Cart',      back: false, search: false, cart: false },
+    favourites:  { title: 'Favourites',   back: false, search: false, cart: true  },
+    account:     { title: 'Account',      back: false, search: false, cart: true  },
+    product:     { title: '',             back: true,  search: false, cart: true  },
+    checkout:    { title: 'Checkout',     back: true,  search: false, cart: false },
+    orders:      { title: 'My Orders',    back: true,  search: false, cart: true  },
+    search:      { title: 'Search',       back: true,  search: false, cart: true  },
+    offers:      { title: '🔥 Offers',    back: false, search: false, cart: true  },
+    newarrivals: { title: '✨ New Arrivals', back: false, search: false, cart: true  },
   };
 
   // ── Register a route ────────────────────────────────────────────────────────

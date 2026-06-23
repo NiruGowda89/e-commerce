@@ -31,12 +31,21 @@ function skeletonGrid(n = 4) {
       </div>
     </div>`).join('');
 }
+
+function getDiscount(p) {
+  return p.discount || (p.originalPrice ? Math.round((1 - p.price / p.originalPrice) * 100) : 0);
+}
+function getOrigPrice(p) {
+  return p.originalPrice || (p.discount ? Math.round(p.price / (1 - p.discount / 100)) : null);
+}
+
 function productCardSmall(p) {
   const id   = p.productId || p.id;
   const name = p.productName || p.name || 'Product';
   const cat  = p.category || '';
   const img  = resolveImgUrl(p.imageUrl || p.image || '');
   const price = p.price || 0;
+  const disc = getDiscount(p);
   return `
     <div class="p-card-sm" onclick="Router.navigate('product',{id:'${id}'})">
       <div class="card-img-wrap">
@@ -44,11 +53,16 @@ function productCardSmall(p) {
           ? `<img src="${img}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
           : ''}
         <div class="card-img-placeholder" ${img ? 'style="display:none"' : ''}>👕</div>
+        ${disc > 0 ? `<span class="discount-badge-pill">${disc}% OFF</span>` : ''}
+        ${p.isNew ? `<span class="new-badge-pill">NEW</span>` : ''}
       </div>
       <div class="card-body">
         <div class="card-cat">${cat}</div>
         <div class="card-name">${name}</div>
-        <div class="card-price">${fmtPrice(price)}</div>
+        <div class="card-price">
+          ${fmtPrice(price)}
+          ${getOrigPrice(p) ? `<span class="card-price-old">${fmtPrice(getOrigPrice(p))}</span>` : ''}
+        </div>
       </div>
     </div>`;
 }
@@ -59,6 +73,7 @@ function productCardGrid(p, showFav = true) {
   const img   = resolveImgUrl(p.imageUrl || p.image || '');
   const price = p.price || 0;
   const isFav = AppState.isFav(String(id));
+  const disc  = getDiscount(p);
   return `
     <div class="p-card-grid" onclick="Router.navigate('product',{id:'${id}'})">
       <div class="card-img-wrap">
@@ -66,6 +81,8 @@ function productCardGrid(p, showFav = true) {
           ? `<img src="${img}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
           : ''}
         <div class="card-img-placeholder" ${img ? 'style="display:none"' : ''}>👕</div>
+        ${disc > 0 ? `<span class="discount-badge-pill">${disc}% OFF</span>` : ''}
+        ${p.isNew ? `<span class="new-badge-pill">NEW</span>` : ''}
         ${showFav ? `<button class="fav-btn ${isFav ? 'active' : ''}"
           onclick="event.stopPropagation();kcToggleFav('${id}',this)"
           aria-label="Favourite">
@@ -75,7 +92,10 @@ function productCardGrid(p, showFav = true) {
       <div class="card-body">
         <div class="card-cat">${cat}</div>
         <div class="card-name">${name}</div>
-        <div class="card-price">${fmtPrice(price)}</div>
+        <div class="card-price">
+          ${fmtPrice(price)}
+          ${getOrigPrice(p) ? `<span class="card-price-old">${fmtPrice(getOrigPrice(p))}</span>` : ''}
+        </div>
       </div>
     </div>`;
 }
@@ -141,7 +161,7 @@ async function screenHome() {
           <div class="section-title">New Arrivals</div>
           <div class="section-sub">Fresh styles this week</div>
         </div>
-        <button class="section-see-all" onclick="Router.navigate('shop')">See All</button>
+        <button class="section-see-all" onclick="Router.navigate('newarrivals')">See All</button>
       </div>
       <div class="product-grid" id="new-arrivals-grid">${skeletonGrid(4)}</div>
     </div>
@@ -156,11 +176,19 @@ async function screenHome() {
         </div>
         <div class="ql-arrow">›</div>
       </div>
-      <div class="quick-link" onclick="Router.navigate('shop')">
+      <div class="quick-link" onclick="Router.navigate('offers')">
         <div class="ql-icon danger">🔥</div>
         <div class="ql-info">
           <div class="ql-title">Exclusive Offers</div>
           <div class="ql-sub">Up to 29% off on select items</div>
+        </div>
+        <div class="ql-arrow">›</div>
+      </div>
+      <div class="quick-link" onclick="Router.navigate('newarrivals')">
+        <div class="ql-icon">✨</div>
+        <div class="ql-info">
+          <div class="ql-title">New Arrivals</div>
+          <div class="ql-sub">Fresh styles just landed</div>
         </div>
         <div class="ql-arrow">›</div>
       </div>
@@ -201,6 +229,61 @@ async function screenShop(params = {}) {
 async function screenProduct(params = {}) {
   return `<div class="spinner-wrap"><div class="spinner"></div></div>`;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   OFFERS SCREEN  (discounted products)
+   ───────────────────────────────────────────────────────────────────────────── */
+async function screenOffers() {
+  return `
+    <div class="pad" style="padding-top:16px">
+      <div class="product-grid" id="offers-grid">${skeletonGrid(6)}</div>
+    </div>
+    <div class="page-bottom"></div>`;
+}
+window.kcInit_offers = async function() {
+  const grid = document.getElementById('offers-grid');
+  if (!grid) return;
+  try {
+    let products = await apiGetProducts();
+    if (!products || products.length === 0) products = DEMO_PRODUCTS;
+  } catch(e) {
+    products = DEMO_PRODUCTS;
+  }
+  const offerProducts = products.filter(p => (p.discount > 0 || p.originalPrice) && !p.disableOffer);
+  if (offerProducts.length === 0) {
+    grid.innerHTML = emptyState('🔥', 'No offers right now', 'Check back soon for exciting deals!', { label: 'Browse All', action: "Router.navigate('shop')" });
+  } else {
+    grid.innerHTML = offerProducts.map(p => productCardGrid(p)).join('');
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NEW ARRIVALS SCREEN
+   ───────────────────────────────────────────────────────────────────────────── */
+async function screenNewArrivals() {
+  return `
+    <div class="pad" style="padding-top:16px">
+      <div class="product-grid" id="arrivals-grid">${skeletonGrid(6)}</div>
+    </div>
+    <div class="page-bottom"></div>`;
+}
+window.kcInit_newarrivals = async function() {
+  const grid = document.getElementById('arrivals-grid');
+  if (!grid) return;
+  let products;
+  try {
+    products = await apiGetProducts();
+    if (!products || products.length === 0) products = DEMO_PRODUCTS;
+  } catch(e) {
+    products = DEMO_PRODUCTS;
+  }
+  const newItems = products.filter(p => p.isNew || p.category === 'New Collection');
+  if (newItems.length === 0) {
+    grid.innerHTML = emptyState('✨', 'No new arrivals yet', 'Fresh styles coming soon!', { label: 'Browse All', action: "Router.navigate('shop')" });
+  } else {
+    grid.innerHTML = newItems.map(p => productCardGrid(p)).join('');
+  }
+};
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CART SCREEN

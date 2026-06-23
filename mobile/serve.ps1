@@ -1,4 +1,4 @@
-$port = 5501
+$port = 5505
 $root = $PSScriptRoot
 $listener = [System.Net.HttpListener]::new()
 $listener.Prefixes.Add("http://localhost:$port/")

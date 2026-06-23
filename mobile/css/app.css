@@ -519,6 +519,43 @@ img { max-width: 100%; display: block; }
   font-size: 2.5rem;
   color: var(--text-3);
 }
+.discount-badge-pill {
+  position: absolute;
+  top: 8px; left: 8px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  z-index: 3;
+  letter-spacing: 0.3px;
+}
+.new-badge-pill {
+  position: absolute;
+  top: 8px; left: 8px;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  z-index: 3;
+  letter-spacing: 0.3px;
+}
+/* If discount badge also present, move new badge to right */
+.discount-badge-pill + .new-badge-pill,
+.new-badge-pill + .discount-badge-pill {
+  left: auto;
+  right: 8px;
+}
+.card-price-old {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  text-decoration: line-through;
+  margin-left: 4px;
+  font-weight: 500;
+}
 .fav-btn {
   position: absolute;
   top: 8px; right: 8px;
