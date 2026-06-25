@@ -7,7 +7,7 @@ if (Test-Path $source) {
         New-Item -ItemType Directory -Force -Path $dest
     }
     Write-Host "Syncing $source -> $dest ..."
-    Copy-Item -Path "$source\*" -Destination $dest -Recurse -Force
+    Copy-Item -Path "$source\*" -Destination $dest -Recurse -Force -Exclude "serve.ps1"
     Write-Host "Sync completed successfully."
 } else {
     Write-Warning "Source directory not found: $source"
