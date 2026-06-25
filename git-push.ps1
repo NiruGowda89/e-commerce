@@ -5,11 +5,11 @@ Write-Host "=== Staging ===" -ForegroundColor Cyan
 & $git -C $repo add -A
 
 Write-Host "`n=== Committing ===" -ForegroundColor Cyan
-& $git -C $repo commit -m "Disable Place Order until payment done; move Change Password to App Settings"
+& $git -C $repo commit -m "Migrate orders to DB only: remove all localStorage order read/write"
 
 Write-Host "`n=== Pushing ===" -ForegroundColor Cyan
 & $git -C $repo push origin main
 
 Write-Host "`n=== Done ===" -ForegroundColor Cyan
-& $git -C $repo log --oneline -3
+& $git -C $repo log --oneline -4
 & $git -C $repo status

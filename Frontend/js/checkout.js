@@ -308,7 +308,6 @@ function onUpiPaymentDone() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
     placeOrder();
 }
-
 // ─── Place Order ──────────────────────────────────────────────────────────────
 function placeOrder() {
     const cart = getCart();
@@ -374,17 +373,21 @@ function placeOrder() {
     if (btn) { btn.textContent = 'Placing order…'; btn.disabled = true; }
 
     apiPlaceOrder(order)
-        .catch(() => console.warn('Backend unreachable — saving locally only'))
-        .finally(() => onOrderSuccess(order));
+        .then(savedOrder => onOrderSuccess(savedOrder || order))
+        .catch(err => {
+            console.error('Order failed:', err);
+            showToast('Could not place order. Please try again.', 'error');
+            if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
+        });
 }
 
 // ─── Order success ────────────────────────────────────────────────────────────
-function onOrderSuccess(order) {
-    saveOrder(order);
+function onOrderSuccess(savedOrder) {
     clearCart();
-    const saved = getOrders()[0];
-    downloadBill(saved);
-    // Redirect to the order confirmation screen in account
+    // Store only the order ID in sessionStorage for the confirmation page
+    sessionStorage.setItem('lastOrderId', String(savedOrder.orderId || savedOrder.id || ''));
+    sessionStorage.setItem('lastOrderData', JSON.stringify(savedOrder));
+    downloadBill(savedOrder);
     window.location.href = 'account.html#order-confirm';
 }
 

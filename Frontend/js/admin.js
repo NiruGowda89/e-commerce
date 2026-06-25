@@ -4,9 +4,6 @@
 (function () {
   'use strict';
 
-  const ORDERS_KEY = 'urbanManOrders';
-
-  /* ── Guard: only ADMIN or SUPER_ADMIN may enter ─────────────────── */
   const admin = getCurrentUser();
   if (!admin || (admin.role !== 'ADMIN' && admin.role !== 'SUPER_ADMIN')) {
     window.location.href = 'login.html';
@@ -129,49 +126,23 @@
     try {
       _products = await apiGetProducts();
     } catch (e) {
-      console.warn('Backend products fetch failed, using fallback.');
-      _products = typeof products !== 'undefined' ? products : [];
+      console.warn('Backend products fetch failed.');
+      _products = [];
     }
 
-    // 2. Fetch orders
-    let backendOrders = [];
+    // 2. Fetch all orders from backend only — no localStorage
     try {
-      backendOrders = await fetch(`${API_BASE}/order/all`).then(r => r.json());
+      const res = await fetch(`${API_BASE}/order/all`);
+      if (!res.ok) throw new Error('Orders fetch failed');
+      _orders = await res.json();
     } catch (e) {
-      console.warn('Backend orders fetch failed, using local storage.');
+      console.warn('Backend orders fetch failed:', e);
+      _orders = [];
     }
 
-    const localOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    
-    // Merge orders (uniquely by order ID or backend reference)
-    const mergedMap = new Map();
-    // Insert local orders
-    localOrders.forEach(o => {
-      mergedMap.set(String(o.id || o.orderId), {
-        orderId: o.id || o.orderId,
-        customerName: o.customerName || 'Guest',
-        email: o.email || '',
-        phone: o.phone || '',
-        shippingAddress: o.shippingAddress || '',
-        city: o.city || '',
-        pincode: o.pincode || '',
-        totalAmount: o.total || o.totalAmount || 0,
-        paymentMethod: o.paymentMethod || 'COD',
-        status: o.status || 'Pending',
-        orderDate: o.placedAt || o.orderDate || new Date().toISOString()
-      });
-    });
-    // Insert backend orders (overwrite or add new)
-    if (Array.isArray(backendOrders)) {
-      backendOrders.forEach(o => {
-        const id = String(o.orderId || o.id);
-        mergedMap.set(id, o);
-      });
-    }
-
-    _orders = Array.from(mergedMap.values());
-    // Sort by date ascending to build timelines, or preserve ID sorting
-    _orders.sort((a, b) => new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime());
+    // Sort newest first
+    _orders.sort((a, b) => new Date(b.orderDate || b.placedAt || 0).getTime()
+                          - new Date(a.orderDate || a.placedAt || 0).getTime());
   }
 
   function buildDashboardCharts() {
@@ -626,28 +597,9 @@
      UPDATE ORDER STATUS
   ══════════════════════════════════════════════════════════════════ */
   window.updateOrderStatus = async function (id, newStatus, currentView = 'orders-all') {
-    let success = false;
-    
-    // 1. Try to update backend first
     try {
       await apiUpdateOrderStatus(id, newStatus);
-      success = true;
-    } catch (e) {
-      console.warn('Backend update failed, updating local state only.');
-    }
-
-    // 2. Sync to local storage for local fallbacks
-    const localOrders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-    const order = localOrders.find(o => String(o.id || o.orderId) === String(id));
-    if (order) {
-      order.status = newStatus;
-      localStorage.setItem(ORDERS_KEY, JSON.stringify(localOrders));
-      success = true;
-    }
-
-    if (success) {
       saToast(`Order #${id} updated to "${newStatus}".`);
-      
       // Refresh active view
       if (currentView === 'orders-all') {
         loadOrdersAllSection();
@@ -656,7 +608,7 @@
       } else {
         loadDashboard();
       }
-    } else {
+    } catch (e) {
       saToast('Failed to update order status.', 'error');
     }
   };

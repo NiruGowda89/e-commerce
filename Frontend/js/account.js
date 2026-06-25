@@ -190,17 +190,21 @@ function saveProfile(e) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ORDERS PANEL  (re-uses orders.js helpers)
+// ORDERS PANEL  — fetches from backend DB
 // ─────────────────────────────────────────────────────────────────────────────
-function renderOrdersPanel() {
-    const orders  = getOrders();
+async function renderOrdersPanel() {
     const listEl  = document.getElementById('ordersList');
     const emptyEl = document.getElementById('noOrders');
     if (!listEl) return;
 
-    if (orders.length === 0) {
+    listEl.innerHTML = '<p class="text-muted small p-3">Loading orders…</p>';
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    const orders = await getOrders();
+
+    if (!orders.length) {
         listEl.innerHTML      = '';
-        emptyEl.style.display = 'block';
+        if (emptyEl) emptyEl.style.display = 'block';
         return;
     }
     emptyEl.style.display = 'none';
@@ -208,14 +212,29 @@ function renderOrdersPanel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ORDER CONFIRM PANEL  (shown immediately after checkout)
+// ORDER CONFIRM PANEL — reads from sessionStorage (set by checkout.js) or latest DB order
 // ─────────────────────────────────────────────────────────────────────────────
-function renderOrderConfirmPanel() {
+async function renderOrderConfirmPanel() {
     const panel = document.getElementById('panel-order-confirm');
     if (!panel) return;
 
-    const orders = getOrders();
-    const order  = orders[0]; // most recent
+    panel.innerHTML = '<p class="text-muted small p-3">Loading order confirmation…</p>';
+
+    // Try sessionStorage first (just placed order)
+    let order = null;
+    const lastData = sessionStorage.getItem('lastOrderData');
+    if (lastData) {
+        try { order = normaliseOrder(JSON.parse(lastData)); } catch(e) {}
+        sessionStorage.removeItem('lastOrderData');
+        sessionStorage.removeItem('lastOrderId');
+    }
+
+    // Fallback: fetch latest order from backend
+    if (!order) {
+        const orders = await getOrders();
+        if (orders.length) order = normaliseOrder(orders[0]);
+    }
+
     if (!order) {
         panel.innerHTML = `<div class="acct-panel-hdr"><h5>Order Confirmation</h5></div>
             <div class="acct-empty-state">
@@ -226,67 +245,53 @@ function renderOrderConfirmPanel() {
         return;
     }
 
-    // Build items summary
     const itemsHtml = (order.items || []).map(item => `
         <div class="oc-item">
-            <img src="${item.image}" alt="${item.name}"
+            <img src="${item.image || item.imageUrl || ''}" alt="${item.productName || item.name || ''}"
                  onerror="this.src='https://via.placeholder.com/48?text=?'">
             <div class="oc-item__info">
-                <div class="oc-item__name">${item.name}</div>
+                <div class="oc-item__name">${item.productName || item.name || '—'}</div>
                 <div class="oc-item__meta">
-                    ${item.size ? 'Size: ' + item.size : ''}
-                    ${item.color ? ' · ' + item.color : ''}
-                    · Qty: ${item.quantity}
+                    ${item.size  ? 'Size: ' + item.size : ''}
+                    ${item.color ? ' · ' + item.color   : ''}
+                    · Qty: ${item.quantity || 1}
                 </div>
             </div>
-            <div class="oc-item__price">₹${Number(item.price) * item.quantity}</div>
+            <div class="oc-item__price">₹${(item.price || 0) * (item.quantity || 1)}</div>
         </div>`).join('');
 
     panel.innerHTML = `
-        <!-- Success hero -->
         <div class="oc-hero">
             <div class="oc-hero__checkmark">✓</div>
             <h2 class="oc-hero__title">Order Confirmed!</h2>
             <p class="oc-hero__sub">Thank you for shopping with Karunada Collection</p>
             <div class="oc-hero__id">${order.id}</div>
         </div>
-
-        <!-- Order details card -->
         <div class="oc-card">
             <div class="oc-card__hdr">
                 <span>🛍️ Items Ordered</span>
                 <span class="oc-badge oc-badge--success">${order.status}</span>
             </div>
-            <div class="oc-items">${itemsHtml}</div>
+            <div class="oc-items">${itemsHtml || '<p class="text-muted small">No item details.</p>'}</div>
         </div>
-
-        <!-- Summary card -->
         <div class="oc-card">
             <div class="oc-card__hdr">💰 Payment Summary</div>
-            <div class="oc-summary-row"><span>Subtotal</span><span>₹${order.subtotal || order.total}</span></div>
+            <div class="oc-summary-row"><span>Subtotal</span><span>₹${order.subtotal || order.totalAmount}</span></div>
             <div class="oc-summary-row"><span>GST</span><span>₹${order.gst || 0}</span></div>
             <div class="oc-summary-row"><span>Shipping</span><span>${(order.shippingCost || 0) > 0 ? '₹' + order.shippingCost : 'Free'}</span></div>
-            <div class="oc-summary-row oc-summary-row--total"><span>Total Paid</span><strong>₹${order.total}</strong></div>
+            <div class="oc-summary-row oc-summary-row--total"><span>Total Paid</span><strong>₹${order.totalAmount}</strong></div>
             <div class="oc-pay-method">Paid via: <strong>${order.paymentMethod}</strong></div>
         </div>
-
-        <!-- Delivery address card -->
         <div class="oc-card">
             <div class="oc-card__hdr">📍 Delivery Address</div>
             <div class="oc-addr-name">${order.customerName}</div>
             <div class="oc-addr-line">${order.shippingAddress}</div>
-            <div class="oc-addr-line">${order.city}${order.state ? ', ' + order.state : ''} – ${order.pincode}</div>
-            <div class="oc-addr-line">📞 ${order.phone}${order.altPhone ? ' · ' + order.altPhone : ''}</div>
+            <div class="oc-addr-line">${order.city} – ${order.pincode}</div>
+            <div class="oc-addr-line">📞 ${order.phone}</div>
         </div>
-
-        <!-- CTA row -->
         <div class="oc-cta-row">
-            <button class="oc-btn oc-btn--outline" onclick="showPanel('orders')">
-                📦 View All Orders
-            </button>
-            <a href="shop.html" class="oc-btn oc-btn--primary">
-                🛍️ Continue Shopping
-            </a>
+            <button class="oc-btn oc-btn--outline" onclick="showPanel('orders')">📦 View All Orders</button>
+            <a href="shop.html" class="oc-btn oc-btn--primary">🛍️ Continue Shopping</a>
         </div>`;
 }
 
@@ -448,18 +453,20 @@ function acctRemoveWishlist(id) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ORDER SEARCH  (delegates to orders.js getOrders / buildOrderCard)
+// ORDER SEARCH
 // ─────────────────────────────────────────────────────────────────────────────
-function searchOrder() {
-    const query  = (document.getElementById('orderSearchInput')?.value || '').trim().toLowerCase();
-    const listEl = document.getElementById('ordersList');
+async function searchOrder() {
+    const query   = (document.getElementById('orderSearchInput')?.value || '').trim().toLowerCase();
+    const listEl  = document.getElementById('ordersList');
     const emptyEl = document.getElementById('noOrders');
     if (!query) { renderOrdersPanel(); return; }
 
-    const matched = getOrders().filter(o =>
-        o.id.toLowerCase().includes(query) ||
-        (o.customerName || '').toLowerCase().includes(query)
-    );
+    const orders  = await getOrders();
+    const matched = orders.filter(o => {
+        const norm = normaliseOrder(o);
+        return norm.id.toLowerCase().includes(query) ||
+               (norm.customerName || '').toLowerCase().includes(query);
+    });
 
     if (matched.length === 0) {
         listEl.innerHTML = `<div class="alert alert-warning">
