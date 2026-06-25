@@ -162,20 +162,6 @@ function saveProfile(e) {
         profile.avatarImage = null;
     }
 
-    // Handle Password Change Validation
-    const currPass = getVal('pfCurrPassword');
-    const newPass  = getVal('pfNewPassword');
-    const confPass = getVal('pfConfPassword');
-
-    if (currPass || newPass || confPass) {
-        if (!currPass) { alert('Current password is required to change password.'); return; }
-        if (newPass.length < 6) { alert('New password must be at least 6 characters.'); return; }
-        if (newPass !== confPass) { alert('New passwords do not match.'); return; }
-        
-        // Mocking password update success
-        alert('Password changed successfully! (Mocked)');
-    }
-
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 
     // Also update the auth store so the navbar name updates
@@ -594,6 +580,51 @@ function renderAppSettingsPanel() {
     if (themeSelect) {
         themeSelect.value = localStorage.getItem('karunada_app_theme') || 'turquoise';
     }
+
+    // Reset password form state
+    const form = document.getElementById('changePwdForm');
+    if (form) form.style.display = 'none';
+    const arrow = document.getElementById('changePwdArrow');
+    if (arrow) { arrow.style.transform = ''; }
+    ['pfCurrPassword','pfNewPassword','pfConfPassword'].forEach(id => setVal(id, ''));
+    setVal('changePwdMsg', '');
+}
+
+function toggleChangePasswordForm() {
+    const form  = document.getElementById('changePwdForm');
+    const arrow = document.getElementById('changePwdArrow');
+    if (!form) return;
+    const isOpen = form.style.display !== 'none';
+    form.style.display  = isOpen ? 'none' : 'block';
+    if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+}
+
+function savePasswordChange() {
+    const currPass = document.getElementById('pfCurrPassword')?.value || '';
+    const newPass  = document.getElementById('pfNewPassword')?.value  || '';
+    const confPass = document.getElementById('pfConfPassword')?.value || '';
+    const msgEl    = document.getElementById('changePwdMsg');
+
+    if (!currPass) { if(msgEl) msgEl.innerHTML = '<span class="text-danger">Current password is required.</span>'; return; }
+    if (newPass.length < 6) { if(msgEl) msgEl.innerHTML = '<span class="text-danger">New password must be at least 6 characters.</span>'; return; }
+    if (newPass !== confPass) { if(msgEl) msgEl.innerHTML = '<span class="text-danger">Passwords do not match.</span>'; return; }
+
+    const user = getCurrentUser();
+    if (!user) { if(msgEl) msgEl.innerHTML = '<span class="text-danger">Not logged in.</span>'; return; }
+
+    fetch(`${window.API_BASE}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, currentPassword: currPass, newPassword: newPass })
+    })
+    .then(r => r.ok ? r.json() : Promise.reject(r))
+    .then(() => {
+        if(msgEl) msgEl.innerHTML = '<span class="text-success">✅ Password changed successfully!</span>';
+        ['pfCurrPassword','pfNewPassword','pfConfPassword'].forEach(id => setVal(id, ''));
+    })
+    .catch(() => {
+        if(msgEl) msgEl.innerHTML = '<span class="text-danger">Failed. Check your current password and try again.</span>';
+    });
 }
 
 function saveApiUrlSetting() {

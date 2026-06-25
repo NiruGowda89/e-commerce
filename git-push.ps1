@@ -5,7 +5,7 @@ Write-Host "=== Staging ===" -ForegroundColor Cyan
 & $git -C $repo add -A
 
 Write-Host "`n=== Committing ===" -ForegroundColor Cyan
-& $git -C $repo commit -m "Fix: tag orders with userId on place, admin sees all orders, users see own only"
+& $git -C $repo commit -m "Disable Place Order until payment done; move Change Password to App Settings"
 
 Write-Host "`n=== Pushing ===" -ForegroundColor Cyan
 & $git -C $repo push origin main

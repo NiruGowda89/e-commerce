@@ -201,24 +201,7 @@
               <input type="tel" id="pfPhone" class="acct-input" readonly placeholder="+91 XXXXX XXXXX">
             </div>
 
-            <!-- Change Password subcard (only editable in edit mode) -->
-            <div class="profile-password-card">
-              <h6 class="font-weight-bold mb-3">🔑 Change Password</h6>
-              <div class="acct-form-group">
-                <label>Current Password</label>
-                <input type="password" id="pfCurrPassword" class="acct-input" readonly placeholder="••••••••">
-              </div>
-              <div class="acct-form-row">
-                <div class="acct-form-group">
-                  <label>New Password</label>
-                  <input type="password" id="pfNewPassword" class="acct-input" readonly placeholder="At least 6 chars">
-                </div>
-                <div class="acct-form-group">
-                  <label>Confirm New Password</label>
-                  <input type="password" id="pfConfPassword" class="acct-input" readonly placeholder="Repeat new password">
-                </div>
-              </div>
-            </div>
+            <!-- Change Password moved to APK / App Settings -->
 
             <div class="mt-4">
               <button type="submit" class="acct-save-btn" id="profileSaveBtn" style="display:none;">
@@ -572,6 +555,31 @@
             <h6 class="font-weight-bold text-danger mb-3">⚠️ Danger Zone</h6>
             <p class="text-muted small">Clearing app data will log you out, clear your shopping cart, and reset all custom APK settings.</p>
             <button type="button" class="btn btn-danger btn-sm" onclick="clearAppDataSetting()">Reset &amp; Clear App Data</button>
+          </div>
+
+          <!-- ── Change Password ── -->
+          <div class="card p-3 shadow-sm mb-4 mt-4">
+            <div class="d-flex justify-content-between align-items-center" style="cursor:pointer;"
+                 onclick="toggleChangePasswordForm()">
+              <h6 class="font-weight-bold text-dark mb-0">🔑 Change Password</h6>
+              <span id="changePwdArrow" style="font-size:1.1rem;transition:transform .2s;">›</span>
+            </div>
+            <div id="changePwdForm" style="display:none;margin-top:16px;">
+              <div class="form-group">
+                <label style="font-size:.82rem;font-weight:600;">Current Password</label>
+                <input type="password" id="pfCurrPassword" class="form-control" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label style="font-size:.82rem;font-weight:600;">New Password</label>
+                <input type="password" id="pfNewPassword" class="form-control" placeholder="At least 6 characters">
+              </div>
+              <div class="form-group">
+                <label style="font-size:.82rem;font-weight:600;">Confirm New Password</label>
+                <input type="password" id="pfConfPassword" class="form-control" placeholder="Repeat new password">
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="savePasswordChange()">Update Password</button>
+              <div id="changePwdMsg" class="mt-2 small"></div>
+            </div>
           </div>
         </div>
         <!-- / APK / APP SETTINGS PANEL -->

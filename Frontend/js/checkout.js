@@ -239,6 +239,15 @@ function onPayMethodChange(method) {
     if (method === 'UPI')              document.getElementById('upiSection').style.display  = 'block';
     if (method === 'Card')             document.getElementById('cardSection').style.display  = 'block';
     if (method === 'Cash on Delivery') document.getElementById('codSection').style.display   = 'block';
+
+    const btn = document.getElementById('placeOrderBtn');
+    if (method === 'Cash on Delivery') {
+        // COD — enable immediately
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+    } else {
+        // UPI/Card — keep disabled until payment confirmed
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; }
+    }
 }
 
 // ─── UPI App Deep Links ───────────────────────────────────────────────────────
@@ -269,21 +278,35 @@ function payWithUpiApp(app) {
     const name      = encodeURIComponent(MERCHANT_NAME);
     const amtStr    = amount.toFixed(2);
 
-    // Standard UPI intent URL  (works on Android WebView / mobile browsers)
+    // Standard UPI intent URL
     const upiUrl = `upi://pay?pa=${vpa}&pn=${name}&am=${amtStr}&cu=INR&tn=${txnNote}`;
-
-    // App-specific intent schemes
     const schemes = {
         phonepe: `phonepe://pay?pa=${vpa}&pn=${name}&am=${amtStr}&cu=INR&tn=${txnNote}`,
         gpay:    `tez://upi/pay?pa=${vpa}&pn=${name}&am=${amtStr}&cu=INR&tn=${txnNote}`,
         paytm:   `paytmmp://pay?pa=${vpa}&pn=${name}&am=${amtStr}&cu=INR&tn=${txnNote}`,
         other:   upiUrl,
     };
-
     const deepLink = schemes[app] || upiUrl;
 
-    // Try to open app via intent
+    // Show "I've paid" confirm section
+    const qrFallback = document.getElementById('upiQrFallback');
+    const qrNote     = document.getElementById('upiQrNote');
+    const appLabels  = { phonepe: 'PhonePe', gpay: 'Google Pay', paytm: 'Paytm', other: 'UPI App' };
+    if (qrNote) qrNote.innerHTML =
+        `<span style="font-size:.85rem;color:#555;">Paying ₹${amtStr} via ${appLabels[app]}…</span>
+         <br><button class="co-place-btn" style="margin-top:10px;background:#22c55e;opacity:1;cursor:pointer;"
+            onclick="onUpiPaymentDone()">✅ I've completed the payment — Place Order</button>`;
+    if (qrFallback) qrFallback.style.display = 'block';
+
+    // Try to open app
     window.location.href = deepLink;
+}
+
+// Called when user confirms UPI payment is done
+function onUpiPaymentDone() {
+    const btn = document.getElementById('placeOrderBtn');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+    placeOrder();
 }
 
 // ─── Place Order ──────────────────────────────────────────────────────────────
@@ -486,6 +509,9 @@ async function payWithRazorpay() {
             theme: { color: '#302b63' },
             handler: function () {
                 selectedPayMethod = 'Card (Razorpay)';
+                // Enable button then auto-place
+                const btn = document.getElementById('placeOrderBtn');
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
                 placeOrder();
             }
         }).open();
