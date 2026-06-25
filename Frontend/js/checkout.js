@@ -282,27 +282,8 @@ function payWithUpiApp(app) {
 
     const deepLink = schemes[app] || upiUrl;
 
-    // Show QR fallback section while deep-linking
-    const qrFallback = document.getElementById('upiQrFallback');
-    const qrNote     = document.getElementById('upiQrNote');
-    const appLabels  = { phonepe: 'PhonePe', gpay: 'Google Pay', paytm: 'Paytm', other: 'UPI App' };
-
-    if (qrNote) qrNote.textContent =
-        `Opening ${appLabels[app] || 'UPI App'} for ₹${amtStr}…  If the app doesn't open, scan the QR below.`;
-    if (qrFallback) qrFallback.style.display = 'block';
-
     // Try to open app via intent
     window.location.href = deepLink;
-
-    // After 2.5 s, if user is still on page, ask for confirmation
-    setTimeout(function () {
-        if (document.visibilityState !== 'hidden') {
-            // App probably didn't open — show QR more prominently
-            if (qrNote) qrNote.textContent =
-                `Couldn't open ${appLabels[app] || 'UPI App'} automatically. ` +
-                `Please scan the QR code or open your UPI app manually and pay ₹${amtStr} to ${MERCHANT_UPI}`;
-        }
-    }, 2500);
 }
 
 // ─── Place Order ──────────────────────────────────────────────────────────────

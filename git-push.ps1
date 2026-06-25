@@ -5,7 +5,7 @@ Write-Host "=== Staging ===" -ForegroundColor Cyan
 & $git -C $repo add -A
 
 Write-Host "`n=== Committing ===" -ForegroundColor Cyan
-& $git -C $repo commit -m "Remove duplicate postgresql migrations, keep single MySQL migration path"
+& $git -C $repo commit -m "Remove QR code from payment; fix orders to show only current user's orders"
 
 Write-Host "`n=== Pushing ===" -ForegroundColor Cyan
 & $git -C $repo push origin main
