@@ -5,7 +5,7 @@ Write-Host "=== Staging ===" -ForegroundColor Cyan
 & $git -C $repo add -A
 
 Write-Host "`n=== Committing ===" -ForegroundColor Cyan
-& $git -C $repo commit -m "Remove QR code from payment; fix orders to show only current user's orders"
+& $git -C $repo commit -m "Fix: tag orders with userId on place, admin sees all orders, users see own only"
 
 Write-Host "`n=== Pushing ===" -ForegroundColor Cyan
 & $git -C $repo push origin main

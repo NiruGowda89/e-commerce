@@ -1,15 +1,30 @@
-// My Orders page — reads order history from localStorage
+// My Orders page — reads order history from localStorage filtered by logged-in user
 const ORDERS_KEY = 'urbanManOrders';
 
+function getCurrentUserId() {
+  try {
+    const user = JSON.parse(localStorage.getItem('urbanManUser') || 'null');
+    return user ? (user.id || user.email) : null;
+  } catch (e) { return null; }
+}
+
 function getOrders() {
-  return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+  const all = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+  try {
+    const user = JSON.parse(localStorage.getItem('urbanManUser') || 'null');
+    if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) return all;
+    const uid = user ? (user.id || user.email) : null;
+    if (!uid) return [];
+    return all.filter(o => o.userId === uid);
+  } catch (e) { return all; }
 }
 
 // Called from checkout.js after a successful order
 function saveOrder(order) {
-  const orders   = getOrders();
+  const orders   = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
   order.id       = 'ORD-' + Date.now();
-  order.status   = 'Confirmed';   // always auto-confirm on payment completion
+  order.userId   = getCurrentUserId();
+  order.status   = 'Confirmed';
   order.placedAt = order.placedAt || new Date().toISOString();
   orders.unshift(order);
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));

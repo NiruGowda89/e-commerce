@@ -340,6 +340,8 @@ function placeOrder() {
         ? `UPI – ${{ phonepe:'PhonePe', gpay:'Google Pay', paytm:'Paytm', other:'Other App' }[selectedUpiApp] || selectedUpiApp}`
         : selectedPayMethod;
 
+    const currentUser = getCurrentUser ? getCurrentUser() : null;
+
     const order = {
         customerName:    document.getElementById('fullName')?.value.trim()  || '',
         email:           document.getElementById('email')?.value.trim()      || '',
@@ -360,6 +362,8 @@ function placeOrder() {
         totalAmount:     grandTotal,
         status:          'Confirmed',
         placedAt:        new Date().toISOString(),
+        userId:          currentUser ? (currentUser.id || currentUser.email) : null,
+        user:            currentUser && currentUser.id ? { userId: currentUser.id } : null,
     };
 
     const btn = document.getElementById('placeOrderBtn');
