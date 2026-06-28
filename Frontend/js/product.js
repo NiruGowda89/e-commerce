@@ -132,10 +132,9 @@ function renderProduct(p) {
     if (discEl) discEl.textContent = `${disc}% off`;
     if (hotEl)  hotEl.style.display = disc >= 20 ? 'inline-flex' : 'none';
 
-    // Main image + thumbnails
+    // Main image + thumbnails — load all images from localStorage if available
     const mainImg = document.getElementById('productImage');
-    // Build a small gallery: use the main image + placeholder variants
-    const gallery = buildGallery(p.image);
+    const gallery = buildGallery(p.image, p.id);
     if (mainImg) mainImg.src = gallery[0];
     renderThumbs(gallery);
 
@@ -153,10 +152,17 @@ function renderProduct(p) {
     bindCTA(p);
 }
 
-/** Build a small gallery array — real image + subtle crop variants via URL trick */
-function buildGallery(imgSrc) {
-    // If it's a full URL we can't crop, so just repeat it (looks fine in thumbs)
-    return [imgSrc, imgSrc, imgSrc];
+/** Build gallery array — loads extra images from localStorage if admin uploaded multiple */
+function buildGallery(imgSrc, productId) {
+    try {
+        const stored = localStorage.getItem('product_images_' + productId);
+        if (stored) {
+            const imgs = JSON.parse(stored).filter(Boolean);
+            if (imgs.length > 0) return imgs;
+        }
+    } catch(e) {}
+    // Fallback: single image
+    return [imgSrc];
 }
 
 function renderThumbs(gallery) {

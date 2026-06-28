@@ -317,10 +317,67 @@
     });
   };
 
+  /* ══════════════════════════════════════════════════════════════════
+     PRODUCT IMAGE PICKER  (multi-image, base64 in localStorage)
+  ══════════════════════════════════════════════════════════════════ */
+  let _selectedImageBase64s = []; // holds all selected images as base64 strings
+
+  window.previewProductImages = function (e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    _selectedImageBase64s = [];
+    const previewRow  = document.getElementById('imagePreviewRow');
+    const countNote   = document.getElementById('imageCountNote');
+    if (previewRow)  previewRow.innerHTML = '';
+    if (countNote)   countNote.textContent = '';
+
+    let loaded = 0;
+    files.forEach((file, idx) => {
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        _selectedImageBase64s[idx] = ev.target.result;
+        loaded++;
+
+        // Add thumbnail preview
+        if (previewRow) {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'position:relative;display:inline-block;';
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);';
+          // Remove button
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.textContent = '×';
+          rm.style.cssText = 'position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:.75rem;line-height:1;cursor:pointer;padding:0;';
+          rm.onclick = function () {
+            _selectedImageBase64s.splice(idx, 1, null);
+            wrap.remove();
+            if (countNote) countNote.textContent = `${_selectedImageBase64s.filter(Boolean).length} image(s) selected`;
+          };
+          wrap.appendChild(img);
+          wrap.appendChild(rm);
+          previewRow.appendChild(wrap);
+        }
+
+        if (loaded === files.length && countNote) {
+          countNote.textContent = `${loaded} image(s) selected`;
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const productForm = document.getElementById('addProductForm');
   if (productForm) {
     productForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+
+      // Get valid images (nulls removed after deletion)
+      const validImages = _selectedImageBase64s.filter(Boolean);
+      // First image as primary URL; fallback to default
+      const primaryImage = validImages[0] || 'images/shirt.jpg';
 
       const newProduct = {
         productName: document.getElementById('productName').value.trim(),
@@ -330,15 +387,28 @@
         stock:       parseInt(document.getElementById('stock').value),
         size:        document.getElementById('size').value.trim(),
         color:       document.getElementById('color').value.trim(),
-        imageUrl:    document.getElementById('imageUrl').value.trim() || 'images/shirt.jpg',
+        imageUrl:    primaryImage,
         description: document.getElementById('description').value.trim()
       };
 
       try {
-        await apiAddProduct(newProduct);
+        const saved = await apiAddProduct(newProduct);
+        // Store all extra images in localStorage keyed by product ID
+        if (validImages.length > 0 && saved) {
+          const pid = saved.productId || saved.id;
+          if (pid) {
+            localStorage.setItem('product_images_' + pid, JSON.stringify(validImages));
+          }
+        }
         saToast('Product added successfully!');
         productForm.reset();
         document.getElementById('brand').value = 'Karunada';
+        // Clear image state
+        _selectedImageBase64s = [];
+        const previewRow = document.getElementById('imagePreviewRow');
+        const countNote  = document.getElementById('imageCountNote');
+        if (previewRow) previewRow.innerHTML = '';
+        if (countNote)  countNote.textContent = '';
         loadProductsSection();
       } catch (err) {
         saToast('Backend offline — product not saved to server.', 'error');

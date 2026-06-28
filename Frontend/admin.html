@@ -476,8 +476,16 @@
               <input type="text" id="color" class="sa-input" placeholder="e.g. Navy Blue">
             </div>
             <div class="form-group col-md-4">
-              <label>Image URL</label>
-              <input type="text" id="imageUrl" class="sa-input" placeholder="images/shirt.jpg">
+              <label>Product Images</label>
+              <div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--surface2);">
+                <input type="file" id="imageFiles" accept="image/*" multiple
+                       style="color:var(--text);font-size:.78rem;width:100%;cursor:pointer;"
+                       onchange="previewProductImages(event)">
+                <div id="imagePreviewRow"
+                     style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+                <div id="imageCountNote"
+                     style="font-size:.72rem;color:var(--muted);margin-top:6px;"></div>
+              </div>
             </div>
           </div>
           <div class="form-group" style="margin-top:12px;">

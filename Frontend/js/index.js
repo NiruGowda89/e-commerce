@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 id:    p.productId,
                 name:  p.productName,
                 price: p.price,
-                image: p.imageUrl || 'images/shirt.jpg',
+                image: getProductImage(p.productId, p.imageUrl || 'images/shirt.jpg'),
                 category: p.category
             }));
         }
@@ -41,3 +41,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             </div>
         </div>`).join('');
 });
+
+// Returns first uploaded image from localStorage if available, else fallback
+function getProductImage(productId, fallback) {
+    try {
+        const stored = localStorage.getItem('product_images_' + productId);
+        if (stored) {
+            const imgs = JSON.parse(stored).filter(Boolean);
+            if (imgs.length > 0) return imgs[0];
+        }
+    } catch(e) {}
+    return fallback || 'images/shirt.jpg';
+}
