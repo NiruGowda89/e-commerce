@@ -288,14 +288,21 @@ function payWithUpiApp(app) {
     };
     const deepLink = schemes[app] || upiUrl;
 
-    // Show "I've paid" confirm section
+    // Show "I've paid" confirm section — no QR, just a button
     const qrFallback = document.getElementById('upiQrFallback');
     const qrNote     = document.getElementById('upiQrNote');
     const appLabels  = { phonepe: 'PhonePe', gpay: 'Google Pay', paytm: 'Paytm', other: 'UPI App' };
     if (qrNote) qrNote.innerHTML =
-        `<span style="font-size:.85rem;color:#555;">Paying ₹${amtStr} via ${appLabels[app]}…</span>
-         <br><button class="co-place-btn" style="margin-top:10px;background:#22c55e;opacity:1;cursor:pointer;"
-            onclick="onUpiPaymentDone()">✅ I've completed the payment — Place Order</button>`;
+        `<div style="margin-top:14px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;text-align:center;">
+           <div style="font-size:.85rem;color:#555;margin-bottom:8px;">
+             Paying <strong>₹${amtStr}</strong> via <strong>${appLabels[app]}</strong>
+           </div>
+           <button class="co-place-btn"
+             style="background:#22c55e;opacity:1;cursor:pointer;margin:0 auto;display:block;max-width:320px;"
+             onclick="onUpiPaymentDone()">
+             ✅ I've completed the payment — Place Order
+           </button>
+         </div>`;
     if (qrFallback) qrFallback.style.display = 'block';
 
     // Try to open app

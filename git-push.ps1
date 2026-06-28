@@ -1,15 +1,7 @@
 $git = "C:\Program Files\Git\bin\git.exe"
 $repo = "C:\D\e-commerce"
-
-Write-Host "=== Staging ===" -ForegroundColor Cyan
 & $git -C $repo add -A
-
-Write-Host "`n=== Committing ===" -ForegroundColor Cyan
-& $git -C $repo commit -m "Migrate orders to DB only: remove all localStorage order read/write"
-
-Write-Host "`n=== Pushing ===" -ForegroundColor Cyan
+& $git -C $repo commit -m "Remove QR from UPI section, show clean payment confirmation button"
 & $git -C $repo push origin main
-
-Write-Host "`n=== Done ===" -ForegroundColor Cyan
-& $git -C $repo log --oneline -4
+& $git -C $repo log --oneline -3
 & $git -C $repo status
