@@ -37,3 +37,14 @@ services:
         value: 9380008927@ibl
       - key: MERCHANT_NAME
         value: Karunada Collection
+
+  - type: static
+    name: karunada-frontend
+    plan: free
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: VITE_API_URL
+        value: https://karunada-ecommerce.onrender.com/api

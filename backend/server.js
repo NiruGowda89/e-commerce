@@ -93,7 +93,13 @@ app.use(express.static(reactBuildPath));
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/') || req.path === '/health') return next();
   res.sendFile(path.join(reactBuildPath, 'index.html'), (err) => {
-    if (err) res.status(404).send('Not found');
+    if (err) {
+      res.status(200).json({
+        message: "Karunada E-commerce API is running successfully.",
+        status: "UP",
+        info: "This is the backend service. To view the storefront, access your deployed Frontend service URL."
+      });
+    }
   });
 });
 
