@@ -1,6 +1,47 @@
+# ─── Build outputs ───────────────────────────────────────
 backend/target/
-backend/launch.ps1
 *.class
 *.log
+*.jar
+*.war
+
+# ─── Node ────────────────────────────────────────────────
+node_modules/
+backend/node_modules/
+Frontend/node_modules/
+
+# ─── Portable runtimes (do not commit binaries) ──────────
+tools/
+
+# ─── Environment / Secrets (NEVER commit these) ──────────
+.env
+backend/.env
+Frontend/.env
+*.env.local
+*.env.production
+*.env.development
+
+# ─── OS / Editor ─────────────────────────────────────────
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ─── Vite / React build ───────────────────────────────────
+Frontend/dist/
+Frontend/dist-ssr/
+
+# ─── Capacitor Android build artifacts ───────────────────
+Frontend/android/.gradle/
+Frontend/android/build/
+Frontend/android/app/build/
+Frontend/android/.idea/
+
+# ─── Misc ────────────────────────────────────────────────
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+backend/launch.ps1

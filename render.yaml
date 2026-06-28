@@ -4,7 +4,7 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerContext: ./
     autoDeploy: true
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -21,3 +21,4 @@ services:
         value: "true"
       - key: SPRING_FLYWAY_BASELINE_VERSION
         value: "0"
+

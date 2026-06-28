@@ -1,28 +1,37 @@
 $mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
-$mvn = "C:\Program Files\Apache\Maven\apache-maven-3.9.15\bin\mvn.cmd"
-$javaHome = "C:\Program Files\Java\jdk-26.0.1"
 $backendDir = "C:\D\e-commerce\backend"
+$frontendDir = "C:\D\e-commerce\Frontend"
+$nodePath = "C:\D\e-commerce\tools\node\node-v20.11.1-win-x64"
 
-# Set JAVA_HOME
-$env:JAVA_HOME = $javaHome
-$env:Path = "$javaHome\bin;" + $env:Path
+# Prepend node path
+$env:Path = "$nodePath;" + $env:Path
 
 Write-Host "=== Step 1: Creating MySQL database ===" -ForegroundColor Cyan
-
-$sqlScript = "CREATE DATABASE IF NOT EXISTS ecommerce_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; SHOW DATABASES;"
-$sqlScript | Out-File -FilePath "$env:TEMP\init_db.sql" -Encoding ASCII
-
 & $mysql -u root -pgowda --execute="CREATE DATABASE IF NOT EXISTS ecommerce_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Database ecommerce_db created/verified successfully." -ForegroundColor Green
 } else {
-    Write-Host "DB creation may have failed. Check your MySQL root password in application.properties." -ForegroundColor Yellow
+    Write-Host "DB creation may have failed. Check your MySQL root credentials." -ForegroundColor Yellow
 }
 
 Write-Host ""
-Write-Host "=== Step 2: Building and running Spring Boot backend ===" -ForegroundColor Cyan
+Write-Host "=== Step 2: Preparing and Building Frontend ===" -ForegroundColor Cyan
+Set-Location $frontendDir
+if (!(Test-Path "node_modules")) {
+    Write-Host "Installing Frontend dependencies..." -ForegroundColor Gray
+    & "$nodePath\npm.cmd" install
+}
+Write-Host "Compiling React production build..." -ForegroundColor Gray
+& "$nodePath\npm.cmd" run build
 
+Write-Host ""
+Write-Host "=== Step 3: Starting Node/Express backend ===" -ForegroundColor Cyan
 Set-Location $backendDir
+if (!(Test-Path "node_modules")) {
+    Write-Host "Installing Backend dependencies..." -ForegroundColor Gray
+    & "$nodePath\npm.cmd" install
+}
 
-& $mvn spring-boot:run "-Dspring-boot.run.jvmArguments=-Djava.net.preferIPv4Stack=true"
+Write-Host "Server starting on http://localhost:8080" -ForegroundColor Green
+& "$nodePath\node.exe" server.js
