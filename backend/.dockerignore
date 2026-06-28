@@ -1,0 +1,22 @@
+# ─── Secrets — never in image ─────────────────────────────
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# ─── Dev tooling ──────────────────────────────────────────
+.git
+.gitignore
+.vscode
+.idea
+
+# ─── Node modules (rebuilt inside Docker) ─────────────────
+**/node_modules
+
+# ─── Build / Target directories ───────────────────────────
+target/
+
+# ─── OS noise ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
