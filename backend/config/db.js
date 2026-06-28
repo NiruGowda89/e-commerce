@@ -1,46 +1,51 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+// Detect if we're connecting to a cloud/SSL-required host
+const isCloudDB = (host) => {
+  if (!host) return false;
+  return host.includes('aivencloud') ||
+         host.includes('render.com') ||
+         host.includes('planetscale') ||
+         host.includes('railway.app') ||
+         host.includes('elephantsql') ||
+         host.includes('cleardb');
+};
+
 let sequelize;
 
-const dbUrl = process.env.SPRING_DATASOURCE_URL || process.env.DATABASE_URL;
+const dbUrl = process.env.DATABASE_URL;        // Render/Heroku-style full URL (optional)
+const dbHost = process.env.DB_HOST || 'localhost';
+const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+const dbName = process.env.DB_NAME || 'ecommerce_db';
+const dbUser = process.env.DB_USER || 'root';
+const dbPass = process.env.DB_PASS || '';
+const sslRequired = isCloudDB(dbHost) || process.env.DB_SSL === 'true';
 
 if (dbUrl) {
-  let cleanedUrl = dbUrl;
-  if (dbUrl.startsWith('jdbc:')) {
-    cleanedUrl = dbUrl.substring(5); // remove 'jdbc:'
-  }
-  if (!cleanedUrl.includes('://')) {
-    cleanedUrl = 'mysql://' + cleanedUrl;
-  }
-  
-  // Strip out jdbc query parameters like ssl-mode or useSSL
-  const queryIndex = cleanedUrl.indexOf('?');
-  if (queryIndex !== -1) {
-    cleanedUrl = cleanedUrl.substring(0, queryIndex);
-  }
+  // Full connection URL (e.g. mysql://user:pass@host:port/db)
+  let cleanUrl = dbUrl.startsWith('jdbc:') ? dbUrl.slice(5) : dbUrl;
+  const qIdx = cleanUrl.indexOf('?');
+  if (qIdx !== -1) cleanUrl = cleanUrl.slice(0, qIdx);
 
-  sequelize = new Sequelize(cleanedUrl, {
+  sequelize = new Sequelize(cleanUrl, {
     dialect: 'mysql',
     logging: false,
     dialectOptions: {
-      ssl: dbUrl.includes('aivencloud') || dbUrl.includes('ssl-mode') ? {
-        rejectUnauthorized: false
-      } : false
+      ssl: isCloudDB(cleanUrl) ? { rejectUnauthorized: false } : false
     }
   });
 } else {
-  sequelize = new Sequelize(
-    process.env.DB_NAME || 'ecommerce_db',
-    process.env.DB_USER || 'root',
-    process.env.DB_PASS || 'gowda',
-    {
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 3306,
-      dialect: 'mysql',
-      logging: false,
-    }
-  );
+  // Individual env vars (local dev or Render with explicit DB_* vars)
+  sequelize = new Sequelize(dbName, dbUser, dbPass, {
+    host: dbHost,
+    port: dbPort,
+    dialect: 'mysql',
+    logging: false,
+    dialectOptions: sslRequired
+      ? { ssl: { rejectUnauthorized: false } }
+      : {}
+  });
 }
 
 module.exports = sequelize;

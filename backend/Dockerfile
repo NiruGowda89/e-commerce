@@ -1,19 +1,35 @@
+# ════════════════════════════════════════════════════════
 # Stage 1 — Build Frontend React App
+# ════════════════════════════════════════════════════════
 FROM node:20-alpine AS frontend-build
-WORKDIR /frontend
+
+WORKDIR /build/Frontend
+# Install deps first (better Docker layer caching)
 COPY Frontend/package*.json ./
 RUN npm install
+# Copy rest of Frontend source
 COPY Frontend/ ./
 RUN npm run build
+# Result: /build/Frontend/dist/
 
+# ════════════════════════════════════════════════════════
 # Stage 2 — Run Backend Express Server
+# ════════════════════════════════════════════════════════
 FROM node:20-alpine
-WORKDIR /app
+
+WORKDIR /app/backend
+
+# Install production deps only
 COPY backend/package*.json ./
 RUN npm install --only=production
+
+# Copy backend source
 COPY backend/ ./
-# Copy compiled frontend build assets (preserves the relative path structure ../frontend/dist)
-COPY --from=frontend-build /frontend/dist /frontend/dist
+
+# Copy the React build into ../Frontend/dist relative to backend/
+# server.js uses: path.join(__dirname, '../Frontend/dist')
+# __dirname = /app/backend, so target = /app/Frontend/dist
+COPY --from=frontend-build /build/Frontend/dist /app/Frontend/dist
 
 EXPOSE 8080
 ENV NODE_ENV=production

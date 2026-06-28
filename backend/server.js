@@ -83,25 +83,19 @@ app.put('/api/admin/users/:userId/role', adminController.updateUserRole);
 app.put('/api/admin/users/role', adminController.updateUserRoleByEmail);
 
 // ─── Static files ─────────────────────────────────────────────────────────────
-// Serve production React build if compiled, otherwise serve backed-up frontend-old
+// Always serve the React/Vite production build
+// In Docker: /app is backend/, /frontend/dist is the built React app
+// Locally:   __dirname is backend/, ../Frontend/dist is the built React app
 const reactBuildPath = path.join(__dirname, '../Frontend/dist');
-const vanillaPath = path.join(__dirname, '../frontend-old');
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(reactBuildPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(reactBuildPath, 'index.html'));
+app.use(express.static(reactBuildPath));
+// SPA fallback — send index.html for all non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path === '/health') return next();
+  res.sendFile(path.join(reactBuildPath, 'index.html'), (err) => {
+    if (err) res.status(404).send('Not found');
   });
-} else {
-  app.use(express.static(vanillaPath));
-  // Fallback for spa routing in development
-  app.get(['/shop', '/cart', '/checkout', '/account', '/login', '/admin', '/super-admin'], (req, res, next) => {
-    const pageName = req.path.substring(1);
-    res.sendFile(path.join(vanillaPath, `${pageName}.html`), (err) => {
-      if (err) next();
-    });
-  });
-}
+});
 
 // ─── Database Sync & Server Start ─────────────────────────────────────────────
 sequelize.sync({ force: false })

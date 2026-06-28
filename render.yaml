@@ -1,24 +1,38 @@
 services:
   - type: web
-    name: ecommerce-backend
+    name: karunada-ecommerce
     env: docker
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./
     autoDeploy: true
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://mysql-19ceb2c-karunaducollections.h.aivencloud.com:19804/defaultdb?ssl-mode=REQUIRED
-      - key: SPRING_DATASOURCE_USERNAME
-        value: avnadmin
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-        value: com.mysql.cj.jdbc.Driver
-      - key: SPRING_JPA_DATABASE_PLATFORM
-        value: org.hibernate.dialect.MySQL8Dialect
-      - key: SPRING_FLYWAY_BASELINE_ON_MIGRATE
-        value: "true"
-      - key: SPRING_FLYWAY_BASELINE_VERSION
-        value: "0"
+      # ── Server ────────────────────────────────────────────────
+      - key: PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production
 
+      # ── MySQL (Aiven cloud DB) ────────────────────────────────
+      - key: DB_HOST
+        value: mysql-19ceb2c-karunaducollections.h.aivencloud.com
+      - key: DB_PORT
+        value: 19804
+      - key: DB_NAME
+        value: defaultdb
+      - key: DB_USER
+        value: avnadmin
+      - key: DB_PASS
+        sync: false          # set in Render dashboard (secret)
+
+      # ── JWT ──────────────────────────────────────────────────
+      - key: JWT_SECRET
+        sync: false          # set in Render dashboard (secret)
+      - key: JWT_EXPIRATION
+        value: 86400000
+
+      # ── UPI Payment ──────────────────────────────────────────
+      - key: MERCHANT_UPI
+        value: 9380008927@ibl
+      - key: MERCHANT_NAME
+        value: Karunada Collection

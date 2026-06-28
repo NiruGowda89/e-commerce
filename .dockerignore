@@ -1,0 +1,36 @@
+# ─── Secrets — never in image ─────────────────────────────
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# ─── Dev tooling ──────────────────────────────────────────
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# ─── Node modules (rebuilt inside Docker) ─────────────────
+**/node_modules
+
+# ─── Frontend source (only the built dist is needed) ──────
+# We DO need Frontend/ so the multi-stage build can compile it
+# So do NOT exclude Frontend/ here
+
+# ─── Android / Capacitor (not needed for server) ──────────
+Frontend/android/
+Frontend/.gitignore
+Frontend/README.md
+Frontend/eslint.config.js
+Frontend/vite.config.js
+Frontend/capacitor.config.json
+Frontend/public/vite.svg
+
+# ─── Portable runtimes (not needed in image) ──────────────
+tools/
+
+# ─── OS noise ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
