@@ -3,7 +3,7 @@ services:
     name: karunada-ecommerce
     env: docker
     plan: free
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./Dockerfile
     dockerContext: ./
     autoDeploy: true
     envVars:
