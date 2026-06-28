@@ -103,8 +103,12 @@ export default function Login({ setUser, showToast }) {
 
     setLoading(true);
     try {
-      await apiForgotPassword(email);
-      showToast('Mock password reset code printed to console logs!', 'info');
+      const data = await apiForgotPassword(email);
+      if (data && data.tempPass) {
+        showToast(`Demo Mode: Your temporary password is: ${data.tempPass}`, 'success');
+      } else {
+        showToast('Mock password reset code printed to console logs!', 'info');
+      }
       setActiveForm('login');
     } catch (err) {
       setErrorMsg(err.message || 'Failed to send password reset request.');

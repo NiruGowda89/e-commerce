@@ -106,7 +106,10 @@ const forgotPassword = async (req, res) => {
     // Mocking email log as done in Spring Boot
     console.log(`[MOCK EMAIL] Sending password reset code to ${email} (${user.name}): Temp password is ${tempPass}`);
 
-    return res.status(200).json({ message: 'Password reset email sent (Mocked)' });
+    return res.status(200).json({ 
+      message: 'Password reset email sent (Mocked)',
+      tempPass: tempPass
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     return res.status(500).json({ error: 'Internal server error' });
