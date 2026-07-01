@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { apiGetProducts, apiGetReviews } from '../api';
+import { apiGetProducts, apiGetReviews, getProductImages } from '../api';
 
 const DEMO_PRODUCTS = [
   { productId: 'd1', productName: 'Classic Black Tee', category: 'T-Shirts', price: 499, size: 'L', color: 'Black', imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&q=80' },
@@ -125,7 +125,7 @@ export default function Shop({ addToCart, showToast }) {
         id,
         name: p.productName || p.name,
         price: p.price,
-        image: p.imageUrl || p.image || 'images/shirt.jpg'
+        image: getProductImages(p.imageUrl)[0]
       });
       setFavourites(prev => [...prev, id]);
       showToast('Saved to Wishlist!', 'success');
@@ -156,7 +156,7 @@ export default function Shop({ addToCart, showToast }) {
       id,
       name: p.productName || p.name,
       price: p.price,
-      image: p.imageUrl || p.image || 'images/shirt.jpg',
+      image: getProductImages(p.imageUrl)[0],
       size: p.size || '',
       color: p.color || '',
     }, 1);
@@ -263,7 +263,7 @@ export default function Shop({ addToCart, showToast }) {
 
                     <Link to={`/product/${id}`}>
                       <img 
-                        src={p.imageUrl || p.image || 'images/shirt.jpg'} 
+                        src={getProductImages(p.imageUrl)[0]} 
                         className="card-img-top" 
                         alt={p.productName || p.name}
                         style={{ height: '200px', objectFit: 'cover' }}

@@ -127,3 +127,23 @@ export const isBackendOnline = async () => {
     return false;
   }
 };
+
+// Helper to parse multiple product images
+export function getProductImages(imageUrl) {
+  if (!imageUrl) return ['images/shirt.jpg'];
+  if (imageUrl.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(imageUrl);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse imageUrl JSON:", e);
+    }
+  }
+  // Default to comma-separated check or single item array
+  if (imageUrl.includes(',')) {
+    return imageUrl.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return [imageUrl];
+}

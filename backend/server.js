@@ -107,6 +107,13 @@ app.get('*', (req, res, next) => {
 sequelize.sync({ force: false })
   .then(async () => {
     console.log('MySQL Database Connected and Synchronized.');
+    // Modify column type for image_url to handle long base64 strings
+    try {
+      await sequelize.query("ALTER TABLE products MODIFY COLUMN image_url LONGTEXT;");
+      console.log('Altered products.image_url column to LONGTEXT.');
+    } catch (e) {
+      console.error('Failed to alter products.image_url column:', e.message);
+    }
     // Seed default products
     await seed();
     app.listen(PORT, () => {
@@ -115,4 +122,8 @@ sequelize.sync({ force: false })
   })
   .catch(err => {
     console.error('Failed to sync database:', err);
+    console.warn('Proceeding to start the server without a successful DB sync. Static frontend will still be served.');
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT} (DB not connected)`);
+    });
   });

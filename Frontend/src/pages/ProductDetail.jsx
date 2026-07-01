@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { apiGetProduct, apiGetReviews, apiAddReview } from '../api';
+import { apiGetProduct, apiGetReviews, apiAddReview, getProductImages } from '../api';
 
 const DEMO_PRODUCTS = [
   { productId: 'd1', productName: 'Classic Black Tee', category: 'T-Shirts', brand: 'Urban Man', price: 499, size: 'M,L,XL', color: 'Black,Blue', imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&q=80', description: 'Premium cotton classic black tee.' },
@@ -23,6 +23,7 @@ export default function ProductDetail({ addToCart, showToast, user }) {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isFav, setIsFav] = useState(false);
+  const [activeImage, setActiveImage] = useState('');
 
   // Review Form
   const [rating, setRating] = useState(5);
@@ -51,6 +52,8 @@ export default function ProductDetail({ addToCart, showToast, user }) {
         }
 
         setProduct(p);
+        const images = getProductImages(p.imageUrl);
+        setActiveImage(images[0] || 'images/shirt.jpg');
         setSelectedSize((p.size || '').split(',')[0]);
         setSelectedColor((p.color || '').split(',')[0]);
 
@@ -69,6 +72,8 @@ export default function ProductDetail({ addToCart, showToast, user }) {
         const demo = DEMO_PRODUCTS.find(item => item.productId === id);
         if (demo) {
           setProduct(demo);
+          const images = getProductImages(demo.imageUrl);
+          setActiveImage(images[0] || 'images/shirt.jpg');
         }
       } finally {
         setLoading(false);
@@ -233,7 +238,7 @@ export default function ProductDetail({ addToCart, showToast, user }) {
         {/* RIGHT: Product Details */}
         <div className="col-md-7 col-lg-8 pd-details-col">
           <div className="pd-details-inner">
-            <div className="pd-brand">{product.brand || 'Karunada Collection'}</div>
+            <div className="pd-brand">{product.brand || 'Karunadu Collections'}</div>
             <h1 className="pd-title">{product.productName || product.name}</h1>
 
             {/* Rating row */}
@@ -312,7 +317,7 @@ export default function ProductDetail({ addToCart, showToast, user }) {
 
             {/* Description */}
             <div className="pd-section">
-              <p className="pd-desc">{product.description || 'Premium comfort wear from Karunada.'}</p>
+              <p className="pd-desc">{product.description || 'Premium comfort wear from Karunadu.'}</p>
             </div>
 
             {/* CTA Buttons */}

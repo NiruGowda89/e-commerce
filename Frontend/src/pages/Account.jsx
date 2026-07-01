@@ -682,7 +682,7 @@ export default function Account({ user, setUser, showToast }) {
                     <div className="oc-hero text-center py-4 mb-4" style={{ background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                       <div className="oc-hero__checkmark m-auto rounded-circle d-flex align-items-center justify-content-center bg-success text-white font-weight-bold mb-2" style={{ width: '50px', height: '50px', fontSize: '1.8rem' }}>✓</div>
                       <h3 className="oc-hero__title text-success font-weight-bold">Order Confirmed!</h3>
-                      <p className="oc-hero__sub text-secondary small">Thank you for shopping with Karunada Collection</p>
+                      <p className="oc-hero__sub text-secondary small">Thank you for shopping with Karunadu Collections</p>
                       <div className="oc-hero__id text-primary font-weight-bold" style={{ fontSize: '1.1rem' }}>#ORD-{confirmOrder.orderId || confirmOrder.id}</div>
                     </div>
 

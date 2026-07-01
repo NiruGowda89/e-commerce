@@ -39,7 +39,7 @@ const Product = sequelize.define('Product', {
     defaultValue: 0
   },
   imageUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT('long'),
     allowNull: true,
     field: 'image_url'
   },

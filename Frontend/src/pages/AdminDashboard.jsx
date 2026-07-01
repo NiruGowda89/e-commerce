@@ -30,6 +30,7 @@ export default function AdminDashboard({ user, showToast }) {
   const [prodSize, setProdSize] = useState('S,M,L,XL');
   const [prodColor, setProdColor] = useState('Blue,Black,White');
   const [prodImg, setProdImg] = useState('');
+  const [prodImagesList, setProdImagesList] = useState([]);
   const [prodDesc, setProdDesc] = useState('');
 
   // Orders state
@@ -97,6 +98,21 @@ export default function AdminDashboard({ user, showToast }) {
   };
 
   // Product CRUD Handlers
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProdImagesList(prev => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeSelectedImage = (idx) => {
+    setProdImagesList(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     if (!prodName || !prodPrice || !prodStock) {
@@ -111,7 +127,7 @@ export default function AdminDashboard({ user, showToast }) {
       stock: parseInt(prodStock, 10),
       size: prodSize,
       color: prodColor,
-      imageUrl: prodImg || 'images/shirt.jpg',
+      imageUrl: prodImagesList.length > 0 ? JSON.stringify(prodImagesList) : (prodImg || 'images/shirt.jpg'),
       description: prodDesc
     };
 
@@ -123,6 +139,7 @@ export default function AdminDashboard({ user, showToast }) {
       setProdPrice('');
       setProdStock('');
       setProdImg('');
+      setProdImagesList([]);
       setProdDesc('');
       loadProducts();
     } catch (err) {
@@ -299,13 +316,30 @@ export default function AdminDashboard({ user, showToast }) {
                   <div className="row">
                     <div className="col-md-6 form-group">
                       <input 
-                        type="text" 
-                        value={prodImg}
-                        onChange={(e) => setProdImg(e.target.value)}
-                        placeholder="Image URL (e.g. images/shirt.jpg)" 
-                        className="form-control"
-                        style={{ background: 'var(--bg-elevated)', color: '#fff', border: '1px solid var(--border)' }}
+                        type="file" 
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="form-control-file text-light"
+                        style={{ background: 'var(--bg-elevated)', padding: '6px', borderRadius: '4px', border: '1px solid var(--border)', width: '100%', fontSize: '0.85rem' }}
                       />
+                      {prodImagesList.length > 0 && (
+                        <div className="d-flex gap-2 mt-2 flex-wrap">
+                          {prodImagesList.map((img, idx) => (
+                            <div key={idx} style={{ position: 'relative', display: 'inline-block', marginRight: '8px', marginBottom: '8px' }}>
+                              <img src={img} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }} />
+                              <button 
+                                type="button" 
+                                onClick={() => removeSelectedImage(idx)}
+                                className="btn btn-danger p-0 rounded-circle"
+                                style={{ position: 'absolute', top: '-5px', right: '-5px', width: '18px', height: '18px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="col-md-3 form-group">
                       <input 

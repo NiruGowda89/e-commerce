@@ -31,7 +31,7 @@ export default function Checkout({ cart, clearCart, user, showToast }) {
 
   // Merchant configurations
   const MERCHANT_UPI = '9380008927@ibl';
-  const MERCHANT_NAME = 'Karunada Collection';
+  const MERCHANT_NAME = 'Karunadu Collections';
 
   // Load checkout summary from session and addresses from local storage
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function Checkout({ cart, clearCart, user, showToast }) {
     const amount = summary.grandTotal;
     const vpa = MERCHANT_UPI;
     const name = MERCHANT_NAME;
-    const txnNote = 'Karunada Collection Order';
+    const txnNote = 'Karunadu Collections Order';
     const amtStr = amount.toFixed(2);
 
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -175,7 +175,7 @@ export default function Checkout({ cart, clearCart, user, showToast }) {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Karunada Collection',
+        name: 'Karunadu Collections',
         description: 'Order Payment',
         order_id: orderData.orderId,
         prefill: {

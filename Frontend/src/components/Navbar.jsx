@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
-export default function Navbar({ cartCount, user }) {
+export default function Navbar({ cartCount, user, logout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -69,7 +69,7 @@ export default function Navbar({ cartCount, user }) {
           </button>
 
           <Link className="kc-logo" to="/">
-            Karunada collection
+            Karunadu Collections
             <span className="kc-logo-badge">NEW</span>
           </Link>
 
@@ -97,6 +97,19 @@ export default function Navbar({ cartCount, user }) {
               <span className="btn-icon">👤</span>
               <span className="btn-label">{accountLabel}</span>
             </Link>
+
+            {/* Logout — desktop (only when logged in) */}
+            {user && (
+              <button
+                className="kc-icon-btn"
+                title="Logout"
+                onClick={() => { logout(); navigate('/login'); }}
+                style={{ color: '#ef4444' }}
+              >
+                <span className="btn-icon">🚪</span>
+                <span className="btn-label">Logout</span>
+              </button>
+            )}
 
             {/* Favourites */}
             <Link className="kc-icon-btn" to="/favourites" title="Favourites">
@@ -135,8 +148,8 @@ export default function Navbar({ cartCount, user }) {
 
       {/* Mobile Drawer */}
       <aside className={`kc-drawer ${drawerOpen ? 'open' : ''}`} ref={drawerRef}>
-        <div className="kc-drawer-header">
-          <span className="kc-drawer-brand">Karunada Collection</span>
+          <div className="kc-drawer-header">
+          <span className="kc-drawer-brand">Karunadu Collections</span>
           <button className="kc-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close">✕</button>
         </div>
 
@@ -162,10 +175,19 @@ export default function Navbar({ cartCount, user }) {
           </Link>
           <Link to="/favourites"   className={`kc-drawer-link ${isActive('/favourites')}`}>❤️ Favourites</Link>
           <Link to={accountLink}   className={`kc-drawer-link ${isActive(accountLink)}`}>👤 {accountLabel}</Link>
+          {user && (
+            <button
+              className="kc-drawer-link"
+              style={{ color: '#ef4444', background: 'none', border: 'none', textAlign: 'left', width: '100%', cursor: 'pointer', padding: '12px 20px', fontSize: '0.95rem' }}
+              onClick={() => { logout(); navigate('/login'); setDrawerOpen(false); }}
+            >
+              🚪 Logout
+            </button>
+          )}
         </nav>
 
         <div className="kc-drawer-footer">
-          <p>© 2025 Karunada Collection</p>
+          <p>© {new Date().getFullYear()} Karunadu Collections</p>
         </div>
       </aside>
     </>

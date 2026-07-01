@@ -50,6 +50,12 @@ export default function App() {
     setToast({ message: '', type: 'success' });
   };
 
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('urbanManUser');
+    localStorage.removeItem('authToken');
+  };
+
   // Cart operations
   const addToCart = (product, qty = 1) => {
     const list = [...cart];
@@ -105,7 +111,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="d-flex flex-column" style={{ minHeight: '100vh', background: 'var(--bg-body)', color: 'var(--text-primary)' }}>
-        <Navbar cartCount={totalCartItems} user={user} />
+        <Navbar cartCount={totalCartItems} user={user} logout={logout} />
         
         <main className="flex-grow-1" style={{ paddingBottom: '40px' }}>
           <Routes>
